@@ -16,5 +16,19 @@ class Loki
       end
       return files
     end
+
+    def self.error(message, show_usage = false)
+      puts message
+      puts ""
+
+      usage if show_usage
+
+      exit
+    end
+
+    def self.usage
+      puts "Usage: loki <source> <destination>"
+      puts ""
+    end
   end
 end

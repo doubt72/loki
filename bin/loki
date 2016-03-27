@@ -12,8 +12,7 @@ if (ARGV.length == 2)
   source_path = ARGV[0]
   dest_path = ARGV[1]
 else
-  puts "Please supply a source and destination path."
-  Loki.usage
+  Loki::Utilities.error("Please supply a source and destination path.", true)
 end
 
 Loki.generate(source_path, dest_path)
