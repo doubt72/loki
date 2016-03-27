@@ -17,4 +17,3 @@ else
 end
 
 Loki.generate(source_path, dest_path)
-
