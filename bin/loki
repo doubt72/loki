@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+
+require 'loki'
+require 'loki/version'
+
+puts "Loki v#{Loki::VERSION}"
+puts ""
+
+if (ARGV.length == 2)
+  source_path = ARGV[0]
+  dest_path = ARGV[1]
+else
+  puts "Please supply a source and destination path."
+  Loki.usage
+end
+
+Loki.generate(source_path, dest_path)
+
