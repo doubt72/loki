@@ -1,28 +1,26 @@
+require 'fileutils'
+
 class Loki
   class Page
-    attr_accessor :source, :dest
+    attr_accessor :source_root, :dest_root, :path, :body, :html
 
-    META_SYMBOLS = %i(id title template tags)
-    META_TYPES = %i(string string string string_array)
+    META_SYMBOLS = %i(id title template tags css javascript)
+    META_TYPES = %i(string string string string_array string_array
+                    string_array)
 
     META_SYMBOLS.each do |attr|
       self.send(:attr_accessor, attr)
     end
 
-    def self.generate(source_root, dest_root, path)
-      page = Page.new
-
-      page.source = File.join(source_root, 'views', path)
-      page.dest = File.join(dest_root, path) + ".html"
-
-      puts "page: #{page.source} -> #{page.dest}"
-
-      page.build
-
-      puts ""
+    def initialize(source_path, dest_path, page)
+      @source_root = source_path
+      @dest_root = dest_path
+      @path = page
     end
 
-    def build
+    def load
+      puts "loading source: #{source}"
+
       file = File.read(source)
 
       meta = file[/^.*\n--\n/m]
@@ -36,6 +34,28 @@ class Loki
       end
 
       body = file.gsub(/^.*\n--\n/,'')
+      html = ""
+    end
+
+    def build(state)
+      puts "page: #{source} ->"
+
+      Loki::Body.generate(self, state)
+
+      dir = File.dirname(dest)
+      FileUtils.mkdir_p(dir)
+      puts "- writing: #{dest}"
+      File.write(dest, html)
+
+      puts ""
+    end
+
+    def source
+      File.join(source_root, 'views', path)
+    end
+
+    def dest
+      File.join(dest_root, path) + ".html"
     end
 
     def validate_type(parameter, type)

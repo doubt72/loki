@@ -8,11 +8,16 @@ require 'loki/version'
 puts "Loki v#{Loki::VERSION}"
 puts ""
 
-if (ARGV.length == 2)
-  source_path = ARGV[0]
-  dest_path = ARGV[1]
-else
-  Loki::Utilities.error("Please supply a source and destination path.", true)
+begin
+  if (ARGV.length == 2)
+    source_path = ARGV[0]
+    dest_path = ARGV[1]
+  else
+    Loki::Utilities.error("Please supply a source and destination path.", true)
+  end
+
+  Loki.generate(source_path, dest_path)
+rescue => e
+  puts "#{e}"
 end
 
-Loki.generate(source_path, dest_path)

@@ -38,5 +38,5 @@ describe "Loki::Utilities" do
                ["c", "f"]
               ])
     end
-  end
+  end # context "tree"
 end # describe "Loki::Utilities"
