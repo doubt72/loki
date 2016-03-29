@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe "Loki::Utilities" do
+describe "Loki::Utils" do
   context "tree" do
     it "returns contents of directory" do
       allow(Dir).to receive(:entries).and_return([".", "..", "a", "b"])
       allow(Dir).to receive(:exists?).and_return(false)
 
-      expect(Loki::Utilities.tree('.')).to eq([["a"], ["b"]])
+      expect(Loki::Utils.tree('.')).to eq([["a"], ["b"]])
     end
 
     it "handles subdirectories" do
@@ -27,7 +27,7 @@ describe "Loki::Utilities" do
       allow(Dir).to receive(:exists?).with("./c/e/h").and_return(false)
       allow(Dir).to receive(:exists?).with("./c/e/i").and_return(false)
 
-      expect(Loki::Utilities.tree('.')).
+      expect(Loki::Utils.tree('.')).
         to eq([
                ["a"],
                ["b"],
@@ -39,4 +39,4 @@ describe "Loki::Utilities" do
               ])
     end
   end # context "tree"
-end # describe "Loki::Utilities"
+end # describe "Loki::Utils"

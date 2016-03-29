@@ -1,5 +1,5 @@
 class Loki
-  class Metadata
+  class MetadataProcessor
     def self.eval(data, page)
       begin
         @@current_page = page
@@ -15,7 +15,7 @@ class Loki
     end
 
     def self.error(msg)
-      Loki::Utilities.error("Error parsing metadata: #{msg}")
+      Loki::Utils.error("Error parsing metadata: #{msg}")
     end
 
     class << self

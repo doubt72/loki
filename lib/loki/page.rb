@@ -40,7 +40,7 @@ class Loki
     def build(state)
       puts "page: #{source} ->"
 
-      Loki::Body.generate(self, state)
+      Loki::PageProcessor.process(self, state)
 
       dir = File.dirname(dest)
       FileUtils.mkdir_p(dir)

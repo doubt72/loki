@@ -1,7 +1,7 @@
 require 'fileutils'
 
 class Loki
-  class Utilities
+  class Utils
     def self.tree(path, list = [])
       files = []
       Dir.entries(path).each do |file|

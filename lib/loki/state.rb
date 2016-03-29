@@ -11,8 +11,8 @@ class Loki
       if (page.id)
         @pages.each do |check|
           if (check.id && check.id == page.id)
-            Loki::Utilities.error("Error loading page: " +
-                                  "duplicate id '#{page.id}'")
+            Loki::Utils.error("Error loading page: " +
+                              "duplicate id '#{page.id}'")
           end
         end
       end
@@ -36,11 +36,11 @@ class Loki
 
       source_path = File.join(source, 'assets', id)
       if File.exists?(source_path)
-        Loki::Utilities.copy_asset(source, dest, id)
+        Loki::Utils.copy_asset(source, dest, id)
         return "/assets/#{id}"
       end
 
-      Loki::Body.error("couldn't link to '#{id}', no match found.")
+      Loki::PageProcessor.error("couldn't link to '#{id}', no match found.")
     end
   end
 end

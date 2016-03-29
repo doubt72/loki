@@ -1,6 +1,6 @@
 class Loki
-  class Body
-    def self.generate(page, state)
+  class PageProcessor
+    def self.process(page, state)
       @@context = :template
       @@global_state = state
       @@current_page = page
@@ -9,7 +9,7 @@ class Loki
         @@context = :body
         page.html = __parse(page.body)
       else
-        page.html = __parse(Loki::Utilities.load_component(page.source_root,
+        page.html = __parse(Loki::Utils.load_component(page.source_root,
                                                          page.template))
       end
 
@@ -23,14 +23,14 @@ class Loki
         page.css.each do |css|
           head += "  <link rel=\"stylesheet\" href=\"assets/#{css}\" " +
             "type=\"text/css\" />\n"
-          Loki::Utilities.copy_asset(page.source_root, page.dest_root, css)
+          Loki::Utils.copy_asset(page.source_root, page.dest_root, css)
         end
       end
       if (page.javascript)
         page.javascript.each do |js|
           head += "  <script src=\"assets/#{js}\" type=\"text/javascript\">" +
             "</script>\n"
-          Loki::Utilities.copy_asset(page.source_root, page.dest_root, js)
+          Loki::Utils.copy_asset(page.source_root, page.dest_root, js)
         end
       end
       if (head.length > 0)
@@ -88,7 +88,7 @@ class Loki
     end
 
     def self.error(msg)
-      Loki::Utilities.error("Error processing page: #{msg}")
+      Loki::Utils.error("Error processing page: #{msg}")
     end
 
     class << self
@@ -107,7 +107,7 @@ class Loki
 
       # Include a file
       def include(path, &block)
-        __parse(Loki::Utilities.load_component(@@current_page.source_root,
+        __parse(Loki::Utils.load_component(@@current_page.source_root,
                                              path))
       end
 
@@ -127,9 +127,9 @@ class Loki
 
       # Image
       def image(path, options = {})
-        Loki::Utilities.copy_asset(@@current_page.source_root,
+        Loki::Utils.copy_asset(@@current_page.source_root,
                                    @@current_page.dest_root, path)
-        rc = "<img src=\"#{path}\""
+        rc = "<img src=\"/assets/#{path}\""
         rc += __handle_options(options)
         rc + " />"
       end

@@ -42,16 +42,16 @@ describe "Loki::State" do
 
       state.add(page)
 
-      expect(state.lookup("a", "b", "id")).to eq("view/page.html")
+      expect(state.lookup("a", "b", "id")).to eq("/view/page.html")
     end
 
     it "can find asset" do
       state = Loki::State.new
 
       allow(File).to receive(:exists?).with("a/assets/id.png").and_return(true)
-      allow(Loki::Utilities).to receive(:copy_asset)
+      allow(Loki::Utils).to receive(:copy_asset)
 
-      expect(state.lookup("a", "b", "id.png")).to eq("assets/id.png")
+      expect(state.lookup("a", "b", "id.png")).to eq("/assets/id.png")
     end
 
     it "raises exception when no match found" do

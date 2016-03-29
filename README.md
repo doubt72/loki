@@ -38,6 +38,9 @@ If you'd like to run the tests, run:
 rspec
 ```
 
+There's also a pretty primitive Makefile that does all this for you
+(as well as `make clean` which will uninstall and remove the gem).
+
 ## Using Loki
 
 Loki requires a source and destination directory, and both of these
