@@ -26,18 +26,18 @@ class Loki
       end
     end
 
-    def lookup(source, dest, id)
+    def lookup_path(source, dest, id)
       # first look up 
       @pages.each do |page|
         if (page.id && id == page.id)
-          return "/" + page.path.join("/") + ".html"
+          return page.path.join("/") + ".html"
         end
       end
 
       source_path = File.join(source, 'assets', id)
       if File.exists?(source_path)
         Loki::Utils.copy_asset(source, dest, id)
-        return "/assets/#{id}"
+        return "assets/#{id}"
       end
 
       Loki::PageProcessor.error("couldn't link to '#{id}', no match found.")

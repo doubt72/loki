@@ -17,15 +17,15 @@ class Loki
     pp(manifest)
     puts ""
 
-    engine = Loki::Engine.new
+    site = Loki::Site.new
 
     manifest.each do |page|
-      engine.add(Loki::Page.new(source_path, dest_path, page))
+      site.add(Loki::Page.new(source_path, dest_path, page))
     end
 
     puts ""
 
-    engine.eval_all
+    site.eval_all
   end
 
   def self.check_paths(source_path, dest_path)

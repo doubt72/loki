@@ -13,7 +13,7 @@ begin
     source_path = ARGV[0]
     dest_path = ARGV[1]
   else
-    Loki::Utilities.error("Please supply a source and destination path.", true)
+    Loki::Utils.error("Please supply a source and destination path.", true)
   end
 
   Loki.generate(source_path, dest_path)

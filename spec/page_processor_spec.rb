@@ -76,27 +76,27 @@ describe "Loki::PageProcessor" do
     let(:site) { Loki::PageProcessor.setup_for_tests }
 
     it "returns link" do
-      allow(site).to receive(:lookup).with("a", "b", "id").
-        and_return("/views/id.html")
+      allow(site).to receive(:lookup_path).with("a", "b", "id").
+        and_return("views/id.html")
 
-      url = '<a href="/views/id.html">text</a>'
+      url = '<a href="views/id.html">text</a>'
       expect(Loki::PageProcessor.link("id", "text")).to eq(url)
     end
 
     it "with option style" do
-      allow(site).to receive(:lookup).with("a", "b", "id").
-        and_return("/views/id.html")
+      allow(site).to receive(:lookup_path).with("a", "b", "id").
+        and_return("views/id.html")
 
-      url = '<a href="/views/id.html" style="style: style;">text</a>'
+      url = '<a href="views/id.html" style="style: style;">text</a>'
       expect(Loki::PageProcessor.link("id", "text",
                              {style: "style: style;"})).to eq(url)
     end
 
     it "with multiple options" do
-      allow(site).to receive(:lookup).with("a", "b", "id").
-        and_return("/views/id.html")
+      allow(site).to receive(:lookup_path).with("a", "b", "id").
+        and_return("views/id.html")
 
-      url = '<a href="/views/id.html" id="id" class="class">text</a>'
+      url = '<a href="views/id.html" id="id" class="class">text</a>'
       expect(Loki::PageProcessor.link("id", "text",
                              {id: "id", class: "class"})).to eq(url)
     end
@@ -105,7 +105,7 @@ describe "Loki::PageProcessor" do
       allow(File).to receive(:exists?).with("a/assets/x.png").and_return(true)
       allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "x.png")
 
-      url = '<a href="/assets/x.png">text</a>'
+      url = '<a href="assets/x.png">text</a>'
       expect(Loki::PageProcessor.link("x.png", "text")).to eq(url)
     end
   end # context "link"
@@ -118,18 +118,18 @@ describe "Loki::PageProcessor" do
     end
 
     it "returns absolute link" do
-      img = '<img src="/assets/x.png" />'
+      img = '<img src="assets/x.png" />'
       expect(Loki::PageProcessor.image("x.png")).to eq(img)
     end
 
     it "with option style" do
-      img = '<img src="/assets/x.png" style="style: style;" />'
+      img = '<img src="assets/x.png" style="style: style;" />'
       expect(Loki::PageProcessor.image("x.png",
                                        {style: "style: style;"})).to eq(img)
     end
 
     it "with multiple options" do
-      img = '<img src="/assets/x.png" id="id" class="class" />'
+      img = '<img src="assets/x.png" id="id" class="class" />'
       expect(Loki::PageProcessor.image("x.png",
                                        {id: "id", class: "class"})).to eq(img)
     end
@@ -173,6 +173,27 @@ describe "Loki::PageProcessor" do
     it "handles bracket escape" do
       body = "simple {{source}\n"
       html = "simple {source}\n"
+
+      expect(Loki::PageProcessor.__parse(body)).to eq(html)
+    end
+
+    it "handles double bracket escape" do
+      body = "simple {{{{source}}\n"
+      html = "simple {{source}}\n"
+
+      expect(Loki::PageProcessor.__parse(body)).to eq(html)
+    end
+
+    it "handles bracket escape inside context" do
+      body = "simple { {foo: \"bar\"}} }\n"
+      html = "simple {:foo=>\"bar\"}\n"
+
+      expect(Loki::PageProcessor.__parse(body)).to eq(html)
+    end
+
+    it "handles double bracket escape inside context" do
+      body = "simple { {all: {foo: \"bar\"}}}} }\n"
+      html = "simple {:all=>{:foo=>\"bar\"}}\n"
 
       expect(Loki::PageProcessor.__parse(body)).to eq(html)
     end
@@ -278,4 +299,78 @@ EOF
       expect(page.html).to eq(html)
     end
   end # context "process"
+
+  context "__make_relative_path" do
+    it "handles top same" do
+      path = "page.html"
+      here = "dest/page.html"
+
+      expect(Loki::PageProcessor.__make_relative_path(path, here)).
+        to eq("page.html")
+    end
+
+    it "handles deep same" do
+      path = "dir/dir/dir/page.html"
+      here = "dest/dir/dir/dir/page.html"
+
+      expect(Loki::PageProcessor.__make_relative_path(path, here)).
+        to eq("page.html")
+    end
+
+    it "handles top different" do
+      path = "image.png"
+      here = "dest/page.html"
+
+      expect(Loki::PageProcessor.__make_relative_path(path, here)).
+        to eq("image.png")
+    end
+
+    it "handles deep different" do
+      path = "dir/dir/dir/image.png"
+      here = "dest/dir/dir/dir/page.html"
+
+      expect(Loki::PageProcessor.__make_relative_path(path, here)).
+        to eq("image.png")
+    end
+
+    it "handles all different" do
+      path = "foo/foo/foo/image.png"
+      here = "dest/dir/dir/dir/page.html"
+
+      expect(Loki::PageProcessor.__make_relative_path(path, here)).
+        to eq("../../../foo/foo/foo/image.png")
+    end
+
+    it "handles here deeper" do
+      path = "dir/dir/image.png"
+      here = "dest/dir/dir/dir/page.html"
+
+      expect(Loki::PageProcessor.__make_relative_path(path, here)).
+        to eq("../image.png")
+    end
+
+    it "handles path deeper" do
+      path = "dir/dir/dir/image.png"
+      here = "dest/dir/dir/page.html"
+
+      expect(Loki::PageProcessor.__make_relative_path(path, here)).
+        to eq("dir/image.png")
+    end
+
+    it "handles here deep" do
+      path = "image.png"
+      here = "dest/dir/dir/dir/page.html"
+
+      expect(Loki::PageProcessor.__make_relative_path(path, here)).
+        to eq("../../../image.png")
+    end
+
+    it "handles path deep" do
+      path = "dir/dir/dir/image.png"
+      here = "dest/page.html"
+
+      expect(Loki::PageProcessor.__make_relative_path(path, here)).
+        to eq("dir/dir/dir/image.png")
+    end
+  end # context "__make_relative_path"
 end # describe "Loki::PageProcessor

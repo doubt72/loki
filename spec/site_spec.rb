@@ -42,7 +42,7 @@ describe "Loki::Site" do
 
       site.add(page)
 
-      expect(site.lookup("a", "b", "id")).to eq("/view/page.html")
+      expect(site.lookup_path("a", "b", "id")).to eq("view/page.html")
     end
 
     it "can find asset" do
@@ -51,7 +51,7 @@ describe "Loki::Site" do
       allow(File).to receive(:exists?).with("a/assets/id.png").and_return(true)
       allow(Loki::Utils).to receive(:copy_asset)
 
-      expect(site.lookup("a", "b", "id.png")).to eq("/assets/id.png")
+      expect(site.lookup_path("a", "b", "id.png")).to eq("assets/id.png")
     end
 
     it "raises exception when no match found" do
@@ -61,7 +61,7 @@ describe "Loki::Site" do
         "couldn't link to 'unknown', no match found.\n\n"
 
       expect {
-        site.lookup("a", "b", "unknown")
+        site.lookup_path("a", "b", "unknown")
       }.to raise_exception(StandardError, msg)
     end
   end # context "lookup"

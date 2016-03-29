@@ -9,8 +9,9 @@ class Loki
         @@context = :body
         page.html = __parse(page.body)
       else
+        puts "- using template: #{page.template}"
         page.html = __parse(Loki::Utils.load_component(page.source_root,
-                                                         page.template))
+                                                       page.template))
       end
 
       page.html = "<body>\n#{page.html}</body>\n"
@@ -44,10 +45,17 @@ class Loki
     def self.__parse(source)
       html = ""
       inside = false
+      escape = false
       buffer = ""
-      source.each_char do |char|
+      0.upto(source.length - 1) do |index|
+        char = source[index]
         if inside
-          if (char == '}')
+          if (char == '}' && escape)
+            escape = false
+            buffer += char
+          elsif (char == '}' && source[index + 1] == '}')
+            escape = true
+          elsif (char == '}')
             inside = false
             html += String(__eval(buffer))
             buffer = ""
@@ -106,6 +114,7 @@ class Loki
 
       # Include a file
       def include(path, &block)
+        puts "- including partial: #{path}"
         __parse(Loki::Utils.load_component(@@current_page.source_root,
                                              path))
       end
@@ -119,16 +128,38 @@ class Loki
 
       # Relative link
       def link(id, text, options = {})
-        path = @@global_site.lookup(@@current_page.source_root,
-                                    @@current_page.dest_root, id)
+        path = @@global_site.lookup_path(@@current_page.source_root,
+                                         @@current_page.dest_root, id)
+
+        path = __make_relative_path(path, @@current_page.dest)
+
         link_abs(path, text, options)
+      end
+
+      def __make_relative_path(path, here)
+        path_parts = path.split("/")[0 .. -2]
+        here_parts = here.split("/")[1 .. -2]
+
+        target = path.split("/")[-1]
+
+        while(path_parts.length > 0 && here_parts.length > 0 &&
+              path_parts[0] == here_parts[0])
+          path_parts = path_parts[1 .. -1]
+          here_parts = here_parts[1 .. -1]
+        end
+
+        new_parts = here_parts.collect {|x| '..'}
+        new_parts += path_parts
+        new_parts.push(target)
+
+        new_parts.join("/")
       end
 
       # Image
       def image(path, options = {})
         Loki::Utils.copy_asset(@@current_page.source_root,
                                @@current_page.dest_root, path)
-        rc = "<img src=\"/assets/#{path}\""
+        rc = "<img src=\"assets/#{path}\""
         rc += __handle_options(options)
         rc + " />"
       end

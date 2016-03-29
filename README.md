@@ -154,4 +154,10 @@ interpretation scope:
 `link`, `link_abs`, and `image` can be passed an options hash as the
 last argument; an `:id` key is used for ids, `:class` for classes, and
 `:style` for styles.  Using a double open curly brace (`{{`) will
-result in a literal curly brace (`{`) in the destination file.
+result in a literal curly brace (`{`) in the destination file.  Using
+a double close curly brace (`}}`) inside an evaluation context will be a
+literal curly brace (`}`) instead of closing the context.
+
+## Todo
+
+* location of errors when evaluation fails
