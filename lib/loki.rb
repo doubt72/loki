@@ -1,7 +1,7 @@
 require 'pp'
 
 require 'loki/utilities'
-require 'loki/engine'
+require 'loki/state'
 require 'loki/page'
 require 'loki/metadata'
 require 'loki/body'

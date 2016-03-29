@@ -7,9 +7,9 @@ class Loki
 
       if (page.template.nil?)
         @@context = :body
-        page.html = parse(page.body)
+        page.html = __parse(page.body)
       else
-        page.html = parse(Loki::Utilities.load_component(page.source_root,
+        page.html = __parse(Loki::Utilities.load_component(page.source_root,
                                                          page.template))
       end
 
@@ -41,7 +41,7 @@ class Loki
       page.html = "<html>\n#{page.html}</html>\n"
     end
 
-    def self.parse(source)
+    def self.__parse(source)
       html = ""
       inside = false
       buffer = ""
@@ -50,7 +50,7 @@ class Loki
         if inside
           if (char == '}')
             inside = false
-            html += eval(buffer)
+            html += __eval(buffer)
             buffer = ""
           else
             buffer += char
@@ -75,7 +75,7 @@ class Loki
       html
     end
 
-    def self.eval(data)
+    def self.__eval(data)
       begin
         instance_eval(data)
       rescue Exception => e
@@ -102,17 +102,41 @@ class Loki
           error("attempt to include body outside of template")
         end
         @@context = :body
-        parse(@@current_page.body)
+        __parse(@@current_page.body)
       end
 
       # Include a file
       def include(path, &block)
-        
+        __parse(Loki::Utilities.load_component(@@current_page.source_root,
+                                             path))
       end
 
       # Absolute link
       def link_abs(url, text, options = {})
         rc = "<a href=\"#{url}\""
+        rc += __handle_options(options)
+        rc + ">#{text}</a>"
+      end
+
+      # Relative link
+      def link(id, text, options = {})
+        path = @@global_state.lookup(@@current_page.source_root,
+                                     @@current_page.dest_root, id)
+        link_abs(path, text, options)
+      end
+
+      # Image
+      def image(path, options = {})
+        Loki::Utilities.copy_asset(@@current_page.source_root,
+                                   @@current_page.dest_root, path)
+        rc = "<img src=\"#{path}\""
+        rc += __handle_options(options)
+        rc + " />"
+      end
+
+      # Helper functions
+      def __handle_options(options = {})
+        rc = ""
         if (options[:id])
           rc += " id=\"#{options[:id]}\""
         end
@@ -122,15 +146,7 @@ class Loki
         if (options[:style])
           rc += " style=\"#{options[:style]}\""
         end
-        rc + ">#{text}</a>"
-      end
-
-      # Relative link
-      def link(path, text, options = {})
-      end
-
-      # Image
-      def image(path, options = {})
+        rc
       end
     end
   end
