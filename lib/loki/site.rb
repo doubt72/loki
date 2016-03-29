@@ -1,5 +1,5 @@
 class Loki
-  class State
+  class Site
     def initialize
       @pages = []
     end

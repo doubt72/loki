@@ -1,8 +1,8 @@
 class Loki
   class PageProcessor
-    def self.process(page, state)
+    def self.process(page, site)
       @@context = :template
-      @@global_state = state
+      @@global_site = site
       @@current_page = page
 
       if (page.template.nil?)
@@ -45,12 +45,11 @@ class Loki
       html = ""
       inside = false
       buffer = ""
-      0.upto(source.length - 1) do |x|
-        char = source[x]
+      source.each_char do |char|
         if inside
           if (char == '}')
             inside = false
-            html += __eval(buffer)
+            html += String(__eval(buffer))
             buffer = ""
           else
             buffer += char
@@ -120,15 +119,15 @@ class Loki
 
       # Relative link
       def link(id, text, options = {})
-        path = @@global_state.lookup(@@current_page.source_root,
-                                     @@current_page.dest_root, id)
+        path = @@global_site.lookup(@@current_page.source_root,
+                                    @@current_page.dest_root, id)
         link_abs(path, text, options)
       end
 
       # Image
       def image(path, options = {})
         Loki::Utils.copy_asset(@@current_page.source_root,
-                                   @@current_page.dest_root, path)
+                               @@current_page.dest_root, path)
         rc = "<img src=\"/assets/#{path}\""
         rc += __handle_options(options)
         rc + " />"

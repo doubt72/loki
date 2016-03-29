@@ -5,7 +5,7 @@ class Loki
   class PageProcessor
     def self.setup_for_tests
       @@current_page = Loki::Page.new("a", "b", "view")
-      @@global_state = Loki::State.new
+      @@global_site = Loki::Site.new
     end
   end
 end
@@ -73,10 +73,10 @@ describe "Loki::PageProcessor" do
   end # context "link_abs"
 
   context "link" do
-    let(:state) { Loki::PageProcessor.setup_for_tests }
+    let(:site) { Loki::PageProcessor.setup_for_tests }
 
     it "returns link" do
-      allow(state).to receive(:lookup).with("a", "b", "id").
+      allow(site).to receive(:lookup).with("a", "b", "id").
         and_return("/views/id.html")
 
       url = '<a href="/views/id.html">text</a>'
@@ -84,7 +84,7 @@ describe "Loki::PageProcessor" do
     end
 
     it "with option style" do
-      allow(state).to receive(:lookup).with("a", "b", "id").
+      allow(site).to receive(:lookup).with("a", "b", "id").
         and_return("/views/id.html")
 
       url = '<a href="/views/id.html" style="style: style;">text</a>'
@@ -93,7 +93,7 @@ describe "Loki::PageProcessor" do
     end
 
     it "with multiple options" do
-      allow(state).to receive(:lookup).with("a", "b", "id").
+      allow(site).to receive(:lookup).with("a", "b", "id").
         and_return("/views/id.html")
 
       url = '<a href="/views/id.html" id="id" class="class">text</a>'
@@ -111,7 +111,7 @@ describe "Loki::PageProcessor" do
   end # context "link"
 
   context "image" do
-    let(:state) { Loki::PageProcessor.setup_for_tests }
+    let(:site) { Loki::PageProcessor.setup_for_tests }
 
     before(:each) do
       allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "x.png")
@@ -213,19 +213,19 @@ describe "Loki::PageProcessor" do
 
   context "process" do
     let(:page) { Loki::Page.new("a", "b", ["view"]) }
-    let(:state) { Loki::State.new }
+    let(:site) { Loki::Site.new }
 
     before(:each) do
       allow(page).to receive(:load)
 
-      state.add(page)
+      site.add(page)
     end
 
     it "handles a simple body" do
       page.body = "simple source\n"
       html = "<html>\n<body>\nsimple source\n</body>\n</html>\n"
 
-      Loki::PageProcessor.process(page, state)
+      Loki::PageProcessor.process(page, site)
       expect(page.html).to eq(html)
     end
 
@@ -237,7 +237,7 @@ describe "Loki::PageProcessor" do
       page.body = "simple source\n"
       html = "<html>\n<body>\n<b>simple source\n</b></body>\n</html>\n"
 
-      Loki::PageProcessor.process(page, state)
+      Loki::PageProcessor.process(page, site)
       expect(page.html).to eq(html)
     end
 
@@ -247,7 +247,7 @@ describe "Loki::PageProcessor" do
         "attempt to include body outside of template\n\n"
 
       expect {
-        Loki::PageProcessor.process(page, state)
+        Loki::PageProcessor.process(page, site)
       }.to raise_error(StandardError, msg)
     end
 
@@ -274,7 +274,7 @@ simple source
 </html>
 EOF
 
-      Loki::PageProcessor.process(page, state)
+      Loki::PageProcessor.process(page, site)
       expect(page.html).to eq(html)
     end
   end # context "process"

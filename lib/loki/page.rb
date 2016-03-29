@@ -23,24 +23,23 @@ class Loki
 
       file = File.read(source)
 
-      meta = file[/^.*\n--\n/m]
+      meta = file[/^.*?\n--\n/m]
       if (meta)
         meta = meta.gsub(/\n--\n$/m,'')
-        Loki::Metadata.eval(meta, self)
+        Loki::MetadataProcessor.eval(meta, self)
 
         0.upto(META_SYMBOLS.length - 1) do |x|
           validate_type(META_SYMBOLS[x], META_TYPES[x])
         end
       end
 
-      body = file.gsub(/^.*\n--\n/,'')
-      html = ""
+      @body = file.gsub(/^.*?\n--\n/m,'')
     end
 
-    def build(state)
+    def build(site)
       puts "page: #{source} ->"
 
-      Loki::PageProcessor.process(self, state)
+      Loki::PageProcessor.process(self, site)
 
       dir = File.dirname(dest)
       FileUtils.mkdir_p(dir)
@@ -79,14 +78,14 @@ class Loki
         end
       else
         msg = "Internal error: undefined metadata type #{type}"
-        Loki::Utilities.error(msg)
+        Loki::Utils.error(msg)
       end
     end
 
     def type_error(parameter, value, type)
       msg = "Invalid type for #{parameter}: " +
         "expecting #{type}, got '#{value}'"
-      Loki::Utilities.error(msg)
+      Loki::Utils.error(msg)
     end
   end
 end

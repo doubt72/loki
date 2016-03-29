@@ -2,7 +2,7 @@ require 'pp'
 
 require 'loki/utils'
 
-require 'loki/state'
+require 'loki/site'
 require 'loki/page'
 require 'loki/metadata_processor'
 require 'loki/page_processor'
