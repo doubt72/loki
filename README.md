@@ -60,10 +60,10 @@ partials) needed to build the pages.
 
 ## Loki Pages
 
-Loki pages have two sections, metadata and body separated by two
-dashes (`--`) on a line all by itself.  Bodies can contain any
-arbitrary HTML and directives (see below) enclosed in curly braces
-(`{` and `}`).  For example, a page might look like:
+Loki pages have two sections: metadata and body.  The sections are
+separated by two dashes (`--`) on a line by itself.  Bodies can
+contain any arbitrary HTML and directives (see below) enclosed in
+curly braces (`{` and `}`).  For example, a page might look like:
 
 ```
 id "home"
@@ -110,16 +110,16 @@ The following parameters are available:
 
 * `title`: page title (will go in the head).
 
-* `template`: template used for this page (if set). The template must
-  exist with the filename supplied in the `components` directory.
+* `template`: template used for this page (if set). The template with
+  the given name/path must exist in the `components` directory.
 
 * `tags`: a list of tags
 
-* `css`: a list of css files; the files must exist in the `assets`
-  directory and will be copied when referenced.
+* `css`: a list of css files/paths; the files must exist in the
+  `assets` directory and will be copied when referenced.
 
-* `javascript`: a list of javascript files; the files must exist in
-  the `assets` directory and will be copied when referenced.
+* `javascript`: a list of javascript files; the files/paths must exist
+  in the `assets` directory and will be copied when referenced.
 
 * `set`: custom metadata fields; requires two arguments: a key and a
   value. For example, if `set :foo, "bar"` is used in a page's
@@ -134,12 +134,13 @@ insert the year at that point in the page.
 ## Loki Directives
 
 Any blocks of ruby code can be inserted inside of curly brackets
-(`{}`) in page bodies.  This can be used to calculate values or insert
-dates, etc.  The following directives are also available in the
+(`{}`) in page bodies.  This can be used to insert files or calculate
+values, etc.  The following directives are available in the
 interpretation scope:
 
 * `body`: only legal in templates, will include the page body (this is
-  required somewhere in the template for it to function)
+  required somewhere in the template for it to meaningfully function
+  as a template)
 
 * `page`: the current page object; this can be used to access values
   set in metadata.  For example `{page.id}` would insert the value of
