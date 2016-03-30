@@ -61,7 +61,7 @@ partials) needed to build the pages.
 ## Loki Pages
 
 Loki pages have two sections, metadata and body separated by two
-dashes (`--`) on a line all by themselves.  Bodies can contain any
+dashes (`--`) on a line all by itself.  Bodies can contain any
 arbitrary HTML and directives (see below) enclosed in curly braces
 (`{` and `}`).  For example, a page might look like:
 
@@ -121,9 +121,15 @@ The following parameters are available:
 * `javascript`: a list of javascript files; the files must exist in
   the `assets` directory and will be copied when referenced.
 
+* `set`: custom metadata fields; requires two arguments: a key and a
+  value. For example, if `set :foo, "bar"` is used in a page's
+  metadata, `{page.foo}` in the body would insert `bar` into the
+  page at that point.
+
 Values must be inside strings (they are interpreted as ruby strings;
 values can also be returned from a `do`-`end` block).  You can also
-put arbitrary ruby code in the metadata.
+put arbitrary ruby code in the metadata, e.g., `{Time.now.year}` would
+insert the year at that point in the page.
 
 ## Loki Directives
 
@@ -134,6 +140,12 @@ interpretation scope:
 
 * `body`: only legal in templates, will include the page body (this is
   required somewhere in the template for it to function)
+
+* `page`: the current page object; this can be used to access values
+  set in metadata.  For example `{page.id}` would insert the value of
+  the current page's `id` into the body.
+
+* `site`: same as above, only for global site values.
 
 * `include(<partial>)`: includes another file from the components
   directory
@@ -153,11 +165,15 @@ interpretation scope:
 
 `link`, `link_abs`, and `image` can be passed an options hash as the
 last argument; an `:id` key is used for ids, `:class` for classes, and
-`:style` for styles.  Using a double open curly brace (`{{`) will
-result in a literal curly brace (`{`) in the destination file.  Using
-a double close curly brace (`}}`) inside an evaluation context will be a
-literal curly brace (`}`) instead of closing the context.
+`:style` for styles.  Passing the option `:self_class` to links will
+instruct them to use the supplied class if the link points to itself.
+Passing the option `:append` will append the value to the link, i.e.,
+something like `#top` could be appended to the end of the url to link
+to the id `top` inside a page.  Using a double open curly brace (`{{`)
+will result in a literal curly brace (`{`) in the destination file.
+Using a double close curly brace (`}}`) inside an evaluation context
+will be a literal curly brace (`}`) instead of closing the context.
 
-## Todo
+## To Do
 
-* location of errors when evaluation fails
+Need something to add to to do

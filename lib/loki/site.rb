@@ -5,7 +5,7 @@ class Loki
     end
 
     # loads page on add
-    def add(page)
+    def __add(page)
       page.load
 
       if (page.id)
@@ -20,13 +20,13 @@ class Loki
       @pages.push(page)
     end
 
-    def eval_all
+    def __eval_all
       @pages.each do |page|
         page.build(self)
       end
     end
 
-    def lookup_path(source, dest, id)
+    def __lookup_path(source, dest, id)
       # first look up 
       @pages.each do |page|
         if (page.id && id == page.id)

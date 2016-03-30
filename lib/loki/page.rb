@@ -39,7 +39,7 @@ class Loki
     def build(site)
       puts "page: #{source} ->"
 
-      Loki::PageProcessor.process(self, site)
+      Loki::PageProcessor.__process(self, site)
 
       dir = File.dirname(dest)
       FileUtils.mkdir_p(dir)

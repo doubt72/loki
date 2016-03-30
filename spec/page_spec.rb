@@ -42,6 +42,92 @@ EOF
     end
   end # context "build"
 
+  context "page access" do
+    it "works" do
+      allow(File).to receive(:read).with("a/views/path/file").
+        and_return("id \"id\"\n--\nstuff: {page.id}\n")
+
+      html = <<EOF
+<html>
+<body>
+stuff: id
+</body>
+</html>
+EOF
+
+      expect {
+        page.load
+      }.to output("loading source: a/views/path/file\n").to_stdout
+      site = Loki::Site.new
+
+      expect(FileUtils).to receive(:mkdir_p).with("b/path")
+      expect(File).to receive(:write).with("b/path/file.html", html)
+
+      expect {
+        page.build(site)
+      }.to output("page: a/views/path/file ->\n" +
+                  "- writing: b/path/file.html\n\n").to_stdout
+    end
+
+    it "handles custom metadata with set" do
+      allow(File).to receive(:read).with("a/views/path/file").
+        and_return("id \"id\"\nset :key, \"value\"\nset \"foo\", \"bar\"" +
+                   "\n--\nstuff: {page.key}\nalso: {page.foo}\n")
+
+      html = <<EOF
+<html>
+<body>
+stuff: value
+also: bar
+</body>
+</html>
+EOF
+
+      expect {
+        page.load
+      }.to output("loading source: a/views/path/file\n").to_stdout
+      site = Loki::Site.new
+
+      expect(FileUtils).to receive(:mkdir_p).with("b/path")
+      expect(File).to receive(:write).with("b/path/file.html", html)
+
+      expect {
+        page.build(site)
+      }.to output("page: a/views/path/file ->\n" +
+                  "- writing: b/path/file.html\n\n").to_stdout
+    end
+  end # context "page access"
+
+  context "site access" do
+    it "works" do
+      allow(File).to receive(:read).with("a/views/path/file").
+        and_return("id \"id\"\n--\nstuff: " +
+                   "{ site.__lookup_path('a', 'b', 'id') }\n")
+
+      html = <<EOF
+<html>
+<body>
+stuff: path/file.html
+</body>
+</html>
+EOF
+
+      site = Loki::Site.new
+      expect {
+        # Load happens on page add
+        site.__add(page)
+      }.to output("loading source: a/views/path/file\n").to_stdout
+
+      expect(FileUtils).to receive(:mkdir_p).with("b/path")
+      expect(File).to receive(:write).with("b/path/file.html", html)
+
+      expect {
+        page.build(site)
+      }.to output("page: a/views/path/file ->\n" +
+                  "- writing: b/path/file.html\n\n").to_stdout
+    end
+  end # context "site access"
+
   context "source and dest" do
     it "returns source file and dest paths" do
       expect(page.source).to eq("a/views/path/file")

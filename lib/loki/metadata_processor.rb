@@ -23,6 +23,11 @@ class Loki
         error("invalid parameter '#{name}'")
       end
 
+      def set(key, value, &block)
+        @@current_page.class.send(:attr_accessor, key)
+        @@current_page.send(key.to_s + '=', value)
+      end
+
       Loki::Page::META_SYMBOLS.each do |call|
         define_method(call) do |value = nil, &block|
           result = value

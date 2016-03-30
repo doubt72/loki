@@ -1,17 +1,19 @@
 class Loki
   class PageProcessor
-    def self.process(page, site)
+    def self.__process(page, site)
       @@context = :template
       @@global_site = site
       @@current_page = page
 
       if (page.template.nil?)
         @@context = :body
-        page.html = __parse(page.body)
+        page.html = __parse(page.body, page.source)
       else
         puts "- using template: #{page.template}"
         page.html = __parse(Loki::Utils.load_component(page.source_root,
-                                                       page.template))
+                                                       page.template),
+                            File.join(page.source_root, 'components',
+                                      page.template))
       end
 
       page.html = "<body>\n#{page.html}</body>\n"
@@ -42,13 +44,17 @@ class Loki
       page.html = "<html>\n#{page.html}</html>\n"
     end
 
-    def self.__parse(source)
+    def self.__parse(source, path)
+      line = 0
       html = ""
       inside = false
       escape = false
       buffer = ""
       0.upto(source.length - 1) do |index|
         char = source[index]
+        if (char == "\n")
+          line += 1
+        end
         if inside
           if (char == '}' && escape)
             escape = false
@@ -57,7 +63,7 @@ class Loki
             escape = true
           elsif (char == '}')
             inside = false
-            html += String(__eval(buffer))
+            html += String(__eval(buffer, path, line))
             buffer = ""
           else
             buffer += char
@@ -82,11 +88,13 @@ class Loki
       html
     end
 
-    def self.__eval(data)
+    def self.__eval(data, path, line)
+      @@eval_path = path
+      @@eval_line = line
       begin
         instance_eval(data)
       rescue Exception => e
-        if (e.message =~ /^Error processing page/)
+        if (e.message =~ /^Error on line.*of file/)
           raise e
         else
           error("\n#{e}")
@@ -95,7 +103,8 @@ class Loki
     end
 
     def self.error(msg)
-      Loki::Utils.error("Error processing page: #{msg}")
+      Loki::Utils.error("Error on line #{@@eval_line} of " +
+                        "file #{@@eval_path}:\n#{msg}")
     end
 
     class << self
@@ -109,14 +118,14 @@ class Loki
           error("attempt to include body outside of template")
         end
         @@context = :body
-        __parse(@@current_page.body)
+        __parse(@@current_page.body, @@current_page.source)
       end
 
       # Include a file
       def include(path, &block)
         puts "- including partial: #{path}"
-        __parse(Loki::Utils.load_component(@@current_page.source_root,
-                                             path))
+        __parse(Loki::Utils.load_component(@@current_page.source_root, path),
+                File.join(@@current_page.source_root, 'components', path))
       end
 
       # Absolute link
@@ -128,10 +137,21 @@ class Loki
 
       # Relative link
       def link(id, text, options = {})
-        path = @@global_site.lookup_path(@@current_page.source_root,
+        path = @@global_site.__lookup_path(@@current_page.source_root,
                                          @@current_page.dest_root, id)
 
         path = __make_relative_path(path, @@current_page.dest)
+        if (options[:append])
+          path += options[:append]
+        end
+
+        if (options[:self_class] && id == @@current_page.id)
+          if (options[:class])
+            options[:class] = "#{options[:self_class]} #{options[:class]}"
+          else
+            options[:class] = options[:self_class]
+          end
+        end
 
         link_abs(path, text, options)
       end
@@ -162,6 +182,16 @@ class Loki
         rc = "<img src=\"assets/#{path}\""
         rc += __handle_options(options)
         rc + " />"
+      end
+
+      # Page
+      def page
+        @@current_page
+      end
+
+      # Site
+      def site
+        @@global_site
       end
 
       # Helper functions

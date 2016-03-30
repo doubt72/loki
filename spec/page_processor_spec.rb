@@ -7,6 +7,10 @@ class Loki
       @@current_page = Loki::Page.new("a", "b", "view")
       @@global_site = Loki::Site.new
     end
+
+    def self.page
+      @@current_page
+    end
   end
 end
 
@@ -24,7 +28,9 @@ describe "Loki::PageProcessor" do
       allow(Loki::Utils).to receive(:load_component).
         with("a", "partial").and_return("simple source")
 
-      expect(Loki::PageProcessor.include("partial")).to eq("simple source")
+      expect {
+        expect(Loki::PageProcessor.include("partial")).to eq("simple source")
+      }.to output("- including partial: partial\n").to_stdout
     end
 
     it "can be nested" do
@@ -36,8 +42,11 @@ describe "Loki::PageProcessor" do
       allow(Loki::Utils).to receive(:load_component).
         with("a", "second").and_return(include_second)
 
-      expect(Loki::PageProcessor.include("partial")).
+      expect {
+        expect(Loki::PageProcessor.include("partial")).
         to eq("simple source second")
+      }.to output("- including partial: partial\n" +
+                  "- including partial: second\n").to_stdout
     end
   end # context "include"
 
@@ -62,13 +71,14 @@ describe "Loki::PageProcessor" do
     it "with option style" do
       url = '<a href="url" style="style: style;">text</a>'
       expect(Loki::PageProcessor.link_abs("url", "text",
-                                 {style: "style: style;"})).to eq(url)
+                                          {style: "style: style;"})).to eq(url)
     end
 
     it "with multiple options" do
       url = '<a href="url" id="id" class="class">text</a>'
       expect(Loki::PageProcessor.link_abs("url", "text",
-                                 {id: "id", class: "class"})).to eq(url)
+                                          {id: "id",
+                                            class: "class"})).to eq(url)
     end
   end # context "link_abs"
 
@@ -76,7 +86,7 @@ describe "Loki::PageProcessor" do
     let(:site) { Loki::PageProcessor.setup_for_tests }
 
     it "returns link" do
-      allow(site).to receive(:lookup_path).with("a", "b", "id").
+      allow(site).to receive(:__lookup_path).with("a", "b", "id").
         and_return("views/id.html")
 
       url = '<a href="views/id.html">text</a>'
@@ -84,21 +94,21 @@ describe "Loki::PageProcessor" do
     end
 
     it "with option style" do
-      allow(site).to receive(:lookup_path).with("a", "b", "id").
+      allow(site).to receive(:__lookup_path).with("a", "b", "id").
         and_return("views/id.html")
 
       url = '<a href="views/id.html" style="style: style;">text</a>'
       expect(Loki::PageProcessor.link("id", "text",
-                             {style: "style: style;"})).to eq(url)
+                                      {style: "style: style;"})).to eq(url)
     end
 
     it "with multiple options" do
-      allow(site).to receive(:lookup_path).with("a", "b", "id").
+      allow(site).to receive(:__lookup_path).with("a", "b", "id").
         and_return("views/id.html")
 
       url = '<a href="views/id.html" id="id" class="class">text</a>'
       expect(Loki::PageProcessor.link("id", "text",
-                             {id: "id", class: "class"})).to eq(url)
+                                      {id: "id", class: "class"})).to eq(url)
     end
 
     it "copies asset" do
@@ -107,6 +117,49 @@ describe "Loki::PageProcessor" do
 
       url = '<a href="assets/x.png">text</a>'
       expect(Loki::PageProcessor.link("x.png", "text")).to eq(url)
+    end
+
+    it "handles :append option" do
+      allow(site).to receive(:__lookup_path).with("a", "b", "id").
+        and_return("views/id.html")
+
+      url = '<a href="views/id.html#top">text</a>'
+      expect(Loki::PageProcessor.link("id", "text",
+                                      {append: "#top"})).to eq(url)
+    end
+
+    it "handles :self_class option when self" do
+      allow(site).to receive(:__lookup_path).with("a", "b", "id").
+        and_return("views/id.html")
+
+      Loki::PageProcessor.page.id = "id"
+
+      url = '<a href="views/id.html" class="self">text</a>'
+      expect(Loki::PageProcessor.link("id", "text",
+                                      {self_class: "self"})).to eq(url)
+    end
+
+    it "handles :self_class option when not self" do
+      allow(site).to receive(:__lookup_path).with("a", "b", "id").
+        and_return("views/id.html")
+
+      Loki::PageProcessor.page.id = "id2"
+
+      url = '<a href="views/id.html">text</a>'
+      expect(Loki::PageProcessor.link("id", "text",
+                                      {self_class: "self"})).to eq(url)
+    end
+
+    it "handles combining :self_class and :class options" do
+      allow(site).to receive(:__lookup_path).with("a", "b", "id").
+        and_return("views/id.html")
+
+      Loki::PageProcessor.page.id = "id"
+
+      url = '<a href="views/id.html" class="self other">text</a>'
+      expect(Loki::PageProcessor.link("id", "text",
+                                      {self_class: "self",
+                                        class: "other"})).to eq(url)
     end
   end # context "link"
 
@@ -140,24 +193,24 @@ describe "Loki::PageProcessor" do
       data = 'link_abs("url", "text")'
       html = '<a href="url">text</a>'
 
-      expect(Loki::PageProcessor.__eval(data)).to eq(html)
+      expect(Loki::PageProcessor.__eval(data, 'my/path', 7)).to eq(html)
     end
 
     it "handles bad directive" do
       data = 'noyo'
-      msg = "Error processing page: invalid directive 'noyo'\n\n"
+      msg = "Error on line 7 of file my/path:\ninvalid directive 'noyo'\n\n"
 
       expect {
-        Loki::PageProcessor.__eval(data)
+        Loki::PageProcessor.__eval(data, 'my/path', 7)
       }.to raise_error(StandardError, msg)
     end
 
     it "handles syntax error" do
       data = 'link_abs('
-      msg = /Error processing page.*syntax error/m
+      msg = /Error on line 7 of file my\/path.*syntax error/m
 
       expect {
-        Loki::PageProcessor.__eval(data)
+        Loki::PageProcessor.__eval(data, 'my/path', 7)
       }.to raise_error(StandardError, msg)
     end
   end # context "eval"
@@ -167,60 +220,60 @@ describe "Loki::PageProcessor" do
       body = "simple source\n"
       html = "simple source\n"
 
-      expect(Loki::PageProcessor.__parse(body)).to eq(html)
+      expect(Loki::PageProcessor.__parse(body, "path")).to eq(html)
     end
 
     it "handles bracket escape" do
       body = "simple {{source}\n"
       html = "simple {source}\n"
 
-      expect(Loki::PageProcessor.__parse(body)).to eq(html)
+      expect(Loki::PageProcessor.__parse(body, "path")).to eq(html)
     end
 
     it "handles double bracket escape" do
       body = "simple {{{{source}}\n"
       html = "simple {{source}}\n"
 
-      expect(Loki::PageProcessor.__parse(body)).to eq(html)
+      expect(Loki::PageProcessor.__parse(body, "path")).to eq(html)
     end
 
     it "handles bracket escape inside context" do
       body = "simple { {foo: \"bar\"}} }\n"
       html = "simple {:foo=>\"bar\"}\n"
 
-      expect(Loki::PageProcessor.__parse(body)).to eq(html)
+      expect(Loki::PageProcessor.__parse(body, "path")).to eq(html)
     end
 
     it "handles double bracket escape inside context" do
       body = "simple { {all: {foo: \"bar\"}}}} }\n"
       html = "simple {:all=>{:foo=>\"bar\"}}\n"
 
-      expect(Loki::PageProcessor.__parse(body)).to eq(html)
+      expect(Loki::PageProcessor.__parse(body, "path")).to eq(html)
     end
 
     it "evaluates simple directive" do
       body = 'simple {link_abs("url", "text")}'
       html = 'simple <a href="url">text</a>'
 
-      expect(Loki::PageProcessor.__parse(body)).to eq(html)
+      expect(Loki::PageProcessor.__parse(body, "path")).to eq(html)
     end
 
     it "handles syntax error" do
       body = 'simple source {link_abs(}'
-      msg = /Error processing page.*syntax error/m
+      msg = /Error on line 0 of file path.*syntax error/m
 
       expect {
-        Loki::PageProcessor.__parse(body)
+        Loki::PageProcessor.__parse(body, "path")
       }.to raise_error(StandardError, msg)
     end
 
     it "handles unbalanced directive" do
       body = 'simple source {link_abs'
-      msg = "Error processing page: " +
+      msg = "Error on line 0 of file path:\n" +
         "unexpected end-of-file; no matching '}'\n\n"
 
       expect {
-        Loki::PageProcessor.__parse(body)
+        Loki::PageProcessor.__parse(body, "path")
       }.to raise_error(StandardError, msg)
     end
 
@@ -228,7 +281,7 @@ describe "Loki::PageProcessor" do
       body = "simple {link_abs('url',\n'text')}"
       html = 'simple <a href="url">text</a>'
 
-      expect(Loki::PageProcessor.__parse(body)).to eq(html)
+      expect(Loki::PageProcessor.__parse(body, "path")).to eq(html)
     end
   end # context "parse"
 
@@ -239,14 +292,14 @@ describe "Loki::PageProcessor" do
     before(:each) do
       allow(page).to receive(:load)
 
-      site.add(page)
+      site.__add(page)
     end
 
     it "handles a simple body" do
       page.body = "simple source\n"
       html = "<html>\n<body>\nsimple source\n</body>\n</html>\n"
 
-      Loki::PageProcessor.process(page, site)
+      Loki::PageProcessor.__process(page, site)
       expect(page.html).to eq(html)
     end
 
@@ -258,17 +311,36 @@ describe "Loki::PageProcessor" do
       page.body = "simple source\n"
       html = "<html>\n<body>\n<b>simple source\n</b></body>\n</html>\n"
 
-      Loki::PageProcessor.process(page, site)
+      expect {
+        Loki::PageProcessor.__process(page, site)
+      }.to output("- using template: template\n").to_stdout
       expect(page.html).to eq(html)
+    end
+
+    it "handles error in template" do
+      allow(Loki::Utils).to receive(:load_component).
+        with("a", "template").and_return("<b>\n\n{foo}</b>")
+
+      page.template = "template"
+      page.body = "simple source\n"
+
+      msg = "Error on line 2 of file a/components/template:" +
+        "\ninvalid directive 'foo'\n\n"
+
+      expect {
+        expect {
+          Loki::PageProcessor.__process(page, site)
+        }.to raise_error(StandardError, msg)
+      }.to output("- using template: template\n").to_stdout
     end
 
     it "handles body include when not template" do
       page.body = "simple {body}\n"
-      msg = "Error processing page: " +
+      msg = "Error on line 0 of file a/views/view:\n" +
         "attempt to include body outside of template\n\n"
 
       expect {
-        Loki::PageProcessor.process(page, site)
+        Loki::PageProcessor.__process(page, site)
       }.to raise_error(StandardError, msg)
     end
 
@@ -295,7 +367,7 @@ simple source
 </html>
 EOF
 
-      Loki::PageProcessor.process(page, site)
+      Loki::PageProcessor.__process(page, site)
       expect(page.html).to eq(html)
     end
   end # context "process"
