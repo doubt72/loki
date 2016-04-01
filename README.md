@@ -76,7 +76,7 @@ css ["css/default.css"]
 
 Today is {Time.now}.
 
-{link("about", "About Me", {class: "my-link"})}
+{link("about", "About Me", {class: "my-link"}})}
 {include("partials/footer.prt")}
 ```
 
