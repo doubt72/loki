@@ -292,7 +292,7 @@ describe "Loki::PageProcessor" do
     before(:each) do
       allow(page).to receive(:load)
 
-      site.__add(page)
+      site.__add_page(page)
     end
 
     it "handles a simple body" do

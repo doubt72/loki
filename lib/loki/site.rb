@@ -5,22 +5,27 @@ class Loki
     end
 
     # loads page on add
-    def __add(page)
-      page.load
-
-      if (page.id)
-        @pages.each do |check|
-          if (check.id && check.id == page.id)
-            Loki::Utils.error("Error loading page: " +
-                              "duplicate id '#{page.id}'")
-          end
-        end
-      end
-
+    def __add_page(page)
       @pages.push(page)
     end
 
-    def __eval_all
+    def __load_pages
+      ids = []
+
+      @pages.each do |page|
+        page.load
+        if (page.id)
+          if ids.include?(page.id)
+            Loki::Utils.error("Error loading page: " +
+                              "duplicate id '#{page.id}'")
+          else
+            ids.push(page.id)
+          end
+        end
+      end
+    end
+
+    def __build_pages
       @pages.each do |page|
         page.build(self)
       end

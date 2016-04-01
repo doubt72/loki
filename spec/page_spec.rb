@@ -113,9 +113,9 @@ stuff: path/file.html
 EOF
 
       site = Loki::Site.new
+      site.__add_page(page)
       expect {
-        # Load happens on page add
-        site.__add(page)
+        site.__load_pages
       }.to output("loading source: a/views/path/file\n").to_stdout
 
       expect(FileUtils).to receive(:mkdir_p).with("b/path")

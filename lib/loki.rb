@@ -20,12 +20,14 @@ class Loki
     site = Loki::Site.new
 
     manifest.each do |page|
-      site.__add(Loki::Page.new(source_path, dest_path, page))
+      site.__add_page(Loki::Page.new(source_path, dest_path, page))
     end
+
+    site.__load_pages
 
     puts ""
 
-    site.__eval_all
+    site.__build_pages
   end
 
   def self.check_paths(source_path, dest_path)

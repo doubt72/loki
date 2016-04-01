@@ -2,32 +2,26 @@ require 'spec_helper'
 
 describe "Loki::Site" do
   context "add" do
-    it "loads page on add" do
-      site = Loki::Site.new
-      page = Loki::Page.new("a", "b", ["view"])
-
-      expect(page).to receive(:load)
-
-      site.__add(page)
-    end
-
     it "handles duplicate ids" do
       site = Loki::Site.new
       page = Loki::Page.new("a", "b", ["view"])
       page.id = "foo"
 
       allow(page).to receive(:load)
-      site.__add(page)
+      site.__add_page(page)
 
       page2 = Loki::Page.new("a", "b", ["view2"])
       page2.id = "foo"
 
       msg = "Error loading page: duplicate id 'foo'\n\n"
 
+      site.__add_page(page)
+      site.__add_page(page2)
+
       allow(page2).to receive(:load)
 
       expect {
-        site.__add(page)
+        site.__load_pages
       }.to raise_exception(StandardError, msg)
     end
   end # context "add"
@@ -40,7 +34,7 @@ describe "Loki::Site" do
 
       allow(page).to receive(:load)
 
-      site.__add(page)
+      site.__add_page(page)
 
       expect(site.__lookup_path("a", "b", "id")).to eq("view/page.html")
     end
