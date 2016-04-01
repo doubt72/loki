@@ -7,7 +7,7 @@ class Loki
 
       if (page.template.nil?)
         @@context = :body
-        page.html = __parse(page.body, page.source)
+        page.html = __parse(page.body, page.source_path)
       else
         puts "- using template: #{page.template}"
         page.html = __parse(Loki::Utils.load_component(page.source_root,
@@ -26,14 +26,14 @@ class Loki
         page.css.each do |css|
           head += "  <link rel=\"stylesheet\" href=\"assets/#{css}\" " +
             "type=\"text/css\" />\n"
-          Loki::Utils.copy_asset(page.source_root, page.dest_root, css)
+          Loki::Utils.copy_asset(page.source_root, page.destination_root, css)
         end
       end
       if (page.javascript)
         page.javascript.each do |js|
           head += "  <script src=\"assets/#{js}\" type=\"text/javascript\">" +
             "</script>\n"
-          Loki::Utils.copy_asset(page.source_root, page.dest_root, js)
+          Loki::Utils.copy_asset(page.source_root, page.destination_root, js)
         end
       end
       if (head.length > 0)
@@ -82,7 +82,7 @@ class Loki
         end
       end
       if inside
-        error("unexpected end-of-file; no matching '}'")
+        __error("unexpected end-of-file; no matching '}'")
       end
 
       html
@@ -97,28 +97,28 @@ class Loki
         if (e.message =~ /^Error on line.*of file/)
           raise e
         else
-          error("\n#{e}")
+          __error("\n#{e}")
         end
       end
     end
 
-    def self.error(msg)
+    def self.__error(msg)
       Loki::Utils.error("Error on line #{@@eval_line} of " +
                         "file #{@@eval_path}:\n#{msg}")
     end
 
     class << self
       def method_missing(name, *args, &block)
-        error("invalid directive '#{name}'")
+        __error("invalid directive '#{name}'")
       end
 
       # Template insert body
       def body
         if (@@context == :body)
-          error("attempt to include body outside of template")
+          __error("attempt to include body outside of template")
         end
         @@context = :body
-        __parse(@@current_page.body, @@current_page.source)
+        __parse(@@current_page.body, @@current_page.source_path)
       end
 
       # Include a file
@@ -138,9 +138,9 @@ class Loki
       # Relative link
       def link(id, text, options = {})
         path = @@global_site.__lookup_path(@@current_page.source_root,
-                                         @@current_page.dest_root, id)
+                                           @@current_page.destination_root, id)
 
-        path = __make_relative_path(path, @@current_page.dest)
+        path = __make_relative_path(path, @@current_page.destination_path)
         if (options[:append])
           path += options[:append]
         end
@@ -178,7 +178,7 @@ class Loki
       # Image
       def image(path, options = {})
         Loki::Utils.copy_asset(@@current_page.source_root,
-                               @@current_page.dest_root, path)
+                               @@current_page.destination_root, path)
         rc = "<img src=\"assets/#{path}\""
         rc += __handle_options(options)
         rc + " />"

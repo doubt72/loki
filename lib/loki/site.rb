@@ -13,7 +13,7 @@ class Loki
       ids = []
 
       @pages.each do |page|
-        page.load
+        page.__load
         if (page.id)
           if ids.include?(page.id)
             Loki::Utils.error("Error loading page: " +
@@ -27,7 +27,7 @@ class Loki
 
     def __build_pages
       @pages.each do |page|
-        page.build(self)
+        page.__build(self)
       end
     end
 
@@ -35,7 +35,7 @@ class Loki
       # first look up 
       @pages.each do |page|
         if (page.id && id == page.id)
-          return page.path.join("/") + ".html"
+          return page.path_components.join("/") + ".html"
         end
       end
 
@@ -45,7 +45,7 @@ class Loki
         return "assets/#{id}"
       end
 
-      Loki::PageProcessor.error("couldn't link to '#{id}', no match found.")
+      Loki::PageProcessor.__error("couldn't link to '#{id}', no match found.")
     end
   end
 end

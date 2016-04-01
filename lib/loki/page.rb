@@ -2,7 +2,8 @@ require 'fileutils'
 
 class Loki
   class Page
-    attr_accessor :source_root, :dest_root, :path, :body, :html
+    attr_accessor :source_root, :destination_root, :path_components
+    attr_accessor :body, :html
 
     META_SYMBOLS = %i(id title template tags css javascript)
     META_TYPES = %i(string string string string_array string_array
@@ -12,16 +13,16 @@ class Loki
       self.send(:attr_accessor, attr)
     end
 
-    def initialize(source_path, dest_path, page)
-      @source_root = source_path
-      @dest_root = dest_path
-      @path = page
+    def initialize(source_root, destination_root, page)
+      @source_root = source_root
+      @destination_root = destination_root
+      @path_components = page
     end
 
-    def load
-      puts "loading source: #{source}"
+    def __load
+      puts "loading source: #{source_path}"
 
-      file = File.read(source)
+      file = File.read(source_path)
 
       meta = file[/^.*?\n--\n/m]
       if (meta)
@@ -29,35 +30,35 @@ class Loki
         Loki::MetadataProcessor.eval(meta, self)
 
         0.upto(META_SYMBOLS.length - 1) do |x|
-          validate_type(META_SYMBOLS[x], META_TYPES[x])
+          __validate_type(META_SYMBOLS[x], META_TYPES[x])
         end
       end
 
       @body = file.gsub(/^.*?\n--\n/m,'')
     end
 
-    def build(site)
-      puts "page: #{source} ->"
+    def __build(site)
+      puts "page: #{source_path} ->"
 
       Loki::PageProcessor.__process(self, site)
 
-      dir = File.dirname(dest)
+      dir = File.dirname(destination_path)
       FileUtils.mkdir_p(dir)
-      puts "- writing: #{dest}"
-      File.write(dest, html)
+      puts "- writing: #{destination_path}"
+      File.write(destination_path, html)
 
       puts ""
     end
 
-    def source
-      File.join(source_root, 'views', path)
+    def source_path
+      File.join(source_root, 'views', path_components)
     end
 
-    def dest
-      File.join(dest_root, path) + ".html"
+    def destination_path
+      File.join(destination_root, path_components) + ".html"
     end
 
-    def validate_type(parameter, type)
+    def __validate_type(parameter, type)
       value = send(parameter)
       if (value.nil?)
         return
@@ -65,15 +66,15 @@ class Loki
       case type
       when :string
         if (value.class != String)
-          type_error(parameter, value, type)
+          __type_error(parameter, value, type)
         end
       when :string_array
         if (value.class != Array)
-          type_error(parameter, value, type)
+          __type_error(parameter, value, type)
         end
         value.each do |item|
           if (item.class != String)
-            type_error("tag", item, :string)
+            __type_error("tag", item, :string)
           end
         end
       else
@@ -82,7 +83,7 @@ class Loki
       end
     end
 
-    def type_error(parameter, value, type)
+    def __type_error(parameter, value, type)
       msg = "Invalid type for #{parameter}: " +
         "expecting #{type}, got '#{value}'"
       Loki::Utils.error(msg)

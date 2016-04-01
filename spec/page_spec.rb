@@ -9,7 +9,7 @@ describe "Loki::Page" do
         and_return("id \"id\"\n--\n--\nstuff\n")
 
       expect {
-        page.load
+        page.__load
       }.to output("loading source: a/views/path/file\n").to_stdout
 
       expect(page.id).to eq("id")
@@ -36,7 +36,7 @@ EOF
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.build(site)
+        page.__build(site)
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -56,7 +56,7 @@ stuff: id
 EOF
 
       expect {
-        page.load
+        page.__load
       }.to output("loading source: a/views/path/file\n").to_stdout
       site = Loki::Site.new
 
@@ -64,7 +64,7 @@ EOF
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.build(site)
+        page.__build(site)
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -84,7 +84,7 @@ also: bar
 EOF
 
       expect {
-        page.load
+        page.__load
       }.to output("loading source: a/views/path/file\n").to_stdout
       site = Loki::Site.new
 
@@ -92,7 +92,7 @@ EOF
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.build(site)
+        page.__build(site)
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -122,7 +122,7 @@ EOF
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.build(site)
+        page.__build(site)
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -130,8 +130,8 @@ EOF
 
   context "source and dest" do
     it "returns source file and dest paths" do
-      expect(page.source).to eq("a/views/path/file")
-      expect(page.dest).to eq("b/path/file.html")
+      expect(page.source_path).to eq("a/views/path/file")
+      expect(page.destination_path).to eq("b/path/file.html")
     end
   end # context "source and dest"
 
@@ -140,14 +140,14 @@ EOF
       page.id = "id"
 
       # This won't raise error
-      page.validate_type(:id, :string)
+      page.__validate_type(:id, :string)
     end
 
     it "validates string_array" do
       page.tags = ["foo", "bar"]
 
       # This won't raise error
-      page.validate_type(:tags, :string_array)
+      page.__validate_type(:tags, :string_array)
     end
 
     it "handles bad string" do
@@ -155,7 +155,7 @@ EOF
       page.id = true
 
       expect {
-        page.validate_type(:id, :string)
+        page.__validate_type(:id, :string)
       }.to raise_error(StandardError, msg)
     end
 
@@ -164,7 +164,7 @@ EOF
       page.tags = true
 
       expect {
-        page.validate_type(:tags, :string_array)
+        page.__validate_type(:tags, :string_array)
       }.to raise_error(StandardError, msg)
     end
 
@@ -173,7 +173,7 @@ EOF
       page.tags = ["tag", true]
 
       expect {
-        page.validate_type(:tags, :string_array)
+        page.__validate_type(:tags, :string_array)
       }.to raise_error(StandardError, msg)
     end
 
@@ -182,7 +182,7 @@ EOF
       page.id = "id"
 
       expect {
-        page.validate_type(:id, :bar)
+        page.__validate_type(:id, :bar)
       }.to raise_error(StandardError, msg)
     end
   end

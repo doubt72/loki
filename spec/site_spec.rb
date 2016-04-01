@@ -7,7 +7,7 @@ describe "Loki::Site" do
       page = Loki::Page.new("a", "b", ["view"])
       page.id = "foo"
 
-      allow(page).to receive(:load)
+      allow(page).to receive(:__load)
       site.__add_page(page)
 
       page2 = Loki::Page.new("a", "b", ["view2"])
@@ -18,7 +18,7 @@ describe "Loki::Site" do
       site.__add_page(page)
       site.__add_page(page2)
 
-      allow(page2).to receive(:load)
+      allow(page2).to receive(:__load)
 
       expect {
         site.__load_pages
@@ -31,8 +31,6 @@ describe "Loki::Site" do
       site = Loki::Site.new
       page = Loki::Page.new("a", "b", ["view", "page"])
       page.id = "id"
-
-      allow(page).to receive(:load)
 
       site.__add_page(page)
 
