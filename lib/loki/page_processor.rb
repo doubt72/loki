@@ -45,7 +45,7 @@ class Loki
     end
 
     def self.__parse(source, path)
-      line = 0
+      line = 1
       html = ""
       inside = false
       escape = false
