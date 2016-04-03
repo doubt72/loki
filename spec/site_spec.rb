@@ -49,7 +49,7 @@ describe "Loki::Site" do
     it "raises exception when no match found" do
       site = Loki::Site.new
 
-      msg = "Error on line 0 of file a/views/path/file:\n" +
+      msg = "Error on line 1 of file a/views/path/file:\n" +
         "couldn't link to 'unknown', no match found.\n\n"
 
       expect {

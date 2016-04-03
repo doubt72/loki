@@ -24,14 +24,20 @@ class Loki
       end
       if (page.css)
         page.css.each do |css|
-          head += "  <link rel=\"stylesheet\" href=\"assets/#{css}\" " +
+          css_path = __make_relative_path("assets/#{css}",
+                                          @@current_page.destination_path)
+          head += "  <link rel=\"stylesheet\" href=\"#{css_path}\" " +
+#          head += "  <link rel=\"stylesheet\" href=\"assets/#{css}\" " +
             "type=\"text/css\" />\n"
           Loki::Utils.copy_asset(page.source_root, page.destination_root, css)
         end
       end
       if (page.javascript)
         page.javascript.each do |js|
-          head += "  <script src=\"assets/#{js}\" type=\"text/javascript\">" +
+          js_path = __make_relative_path("assets/#{js}",
+                                          @@current_page.destination_path)
+          head += "  <script src=\"#{js_path}\" type=\"text/javascript\">" +
+#          head += "  <script src=\"assets/#{js}\" type=\"text/javascript\">" +
             "</script>\n"
           Loki::Utils.copy_asset(page.source_root, page.destination_root, js)
         end
@@ -156,6 +162,17 @@ class Loki
         link_abs(path, text, options)
       end
 
+      # Image
+      def image(path, options = {})
+        Loki::Utils.copy_asset(@@current_page.source_root,
+                               @@current_page.destination_root, path)
+        img_path = __make_relative_path("assets/#{path}",
+                                        @@current_page.destination_path)
+        rc = "<img src=\"#{img_path}\""
+        rc += __handle_options(options)
+        rc + " />"
+      end
+
       def __make_relative_path(path, here)
         path_parts = path.split("/")[0 .. -2]
         here_parts = here.split("/")[1 .. -2]
@@ -173,15 +190,6 @@ class Loki
         new_parts.push(target)
 
         new_parts.join("/")
-      end
-
-      # Image
-      def image(path, options = {})
-        Loki::Utils.copy_asset(@@current_page.source_root,
-                               @@current_page.destination_root, path)
-        rc = "<img src=\"assets/#{path}\""
-        rc += __handle_options(options)
-        rc + " />"
       end
 
       # Page

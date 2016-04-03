@@ -4,7 +4,7 @@ require 'spec_helper'
 class Loki
   class PageProcessor
     def self.setup_for_tests
-      @@current_page = Loki::Page.new("a", "b", "view")
+      @@current_page = Loki::Page.new("a", "b", ["view"])
       @@global_site = Loki::Site.new
     end
 
@@ -170,7 +170,7 @@ describe "Loki::PageProcessor" do
       allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "x.png")
     end
 
-    it "returns absolute link" do
+    it "returns img" do
       img = '<img src="assets/x.png" />'
       expect(Loki::PageProcessor.image("x.png")).to eq(img)
     end
@@ -185,6 +185,14 @@ describe "Loki::PageProcessor" do
       img = '<img src="assets/x.png" id="id" class="class" />'
       expect(Loki::PageProcessor.image("x.png",
                                        {id: "id", class: "class"})).to eq(img)
+    end
+
+    it "handles relative path" do
+      expect(Loki::PageProcessor.page).to receive(:destination_path).
+        and_return("a/dir/view.html")
+
+      img = '<img src="../assets/x.png" />'
+      expect(Loki::PageProcessor.image("x.png")).to eq(img)
     end
   end # context "image"
 
@@ -260,7 +268,7 @@ describe "Loki::PageProcessor" do
 
     it "handles syntax error" do
       body = 'simple source {link_abs(}'
-      msg = /Error on line 0 of file path.*syntax error/m
+      msg = /Error on line 1 of file path.*syntax error/m
 
       expect {
         Loki::PageProcessor.__parse(body, "path")
@@ -269,7 +277,7 @@ describe "Loki::PageProcessor" do
 
     it "handles unbalanced directive" do
       body = 'simple source {link_abs'
-      msg = "Error on line 0 of file path:\n" +
+      msg = "Error on line 1 of file path:\n" +
         "unexpected end-of-file; no matching '}'\n\n"
 
       expect {
@@ -324,7 +332,7 @@ describe "Loki::PageProcessor" do
       page.template = "template"
       page.body = "simple source\n"
 
-      msg = "Error on line 2 of file a/components/template:" +
+      msg = "Error on line 3 of file a/components/template:" +
         "\ninvalid directive 'foo'\n\n"
 
       expect {
@@ -336,7 +344,7 @@ describe "Loki::PageProcessor" do
 
     it "handles body include when not template" do
       page.body = "simple {body}\n"
-      msg = "Error on line 0 of file a/views/view:\n" +
+      msg = "Error on line 1 of file a/views/view:\n" +
         "attempt to include body outside of template\n\n"
 
       expect {
@@ -360,6 +368,35 @@ describe "Loki::PageProcessor" do
   <link rel="stylesheet" href="assets/css" type="text/css" />
   <script src="assets/js" type="text/javascript"></script>
   <script src="assets/js/js" type="text/javascript"></script>
+</head>
+<body>
+simple source
+</body>
+</html>
+EOF
+
+      Loki::PageProcessor.__process(page, site)
+      expect(page.html).to eq(html)
+    end
+
+    it "handles relative headers" do
+      allow(page).to receive(:destination_path).and_return("b/dir/view.html")
+
+      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "css")
+      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "js")
+      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "js/js")
+
+      page.body = "simple source\n"
+      page.title = "title"
+      page.css = ["css"]
+      page.javascript = ["js", "js/js"]
+      html = <<EOF
+<html>
+<head>
+  <title>title</title>
+  <link rel="stylesheet" href="../assets/css" type="text/css" />
+  <script src="../assets/js" type="text/javascript"></script>
+  <script src="../assets/js/js" type="text/javascript"></script>
 </head>
 <body>
 simple source

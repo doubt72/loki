@@ -177,4 +177,5 @@ will be a literal curly brace (`}`) instead of closing the context.
 
 ## To Do
 
-Need something to add to to do
+* favicon configuration
+* arbitrary head data
