@@ -146,6 +146,11 @@ interpretation scope:
   set in metadata.  For example `{page.id}` would insert the value of
   the current page's `id` into the body.
 
+* `page.set(<key>, <value>)`: sets a page value for the page (same as
+  set for metadata). For example, if `{page.set :foo, "bar"}` is
+  inserted somewhere in the page, `{page.foo}` later in the body would
+  insert `bar` into the page at that point.
+
 * `site`: same as above, only for global site values.
 
 * `include(<partial>)`: includes another file from the components

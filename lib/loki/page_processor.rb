@@ -69,7 +69,11 @@ class Loki
             escape = true
           elsif (char == '}')
             inside = false
-            html += String(__eval(buffer, path, line))
+            begin
+              html += String(__eval(buffer, path, line))
+            rescue Exception => e
+              raise "#{e}\nEvaluation context: {#{buffer}}\n\n"
+            end
             buffer = ""
           else
             buffer += char

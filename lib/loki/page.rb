@@ -50,6 +50,11 @@ class Loki
       puts ""
     end
 
+    def set(key, value, &block)
+      self.class.send(:attr_accessor, key)
+      self.send(key.to_s + '=', value)
+    end
+
     def source_path
       File.join(source_root, 'views', path_components)
     end

@@ -96,6 +96,35 @@ EOF
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
+
+    it "can set value inside page" do
+      allow(File).to receive(:read).with("a/views/path/file").
+        and_return("id \"id\"\n--\nstuff: " +
+                   "{page.set :foo, \"bar\"\n\"stuff\"}\n" +
+                   "also: {page.foo}\n")
+
+      html = <<EOF
+<html>
+<body>
+stuff: stuff
+also: bar
+</body>
+</html>
+EOF
+
+      expect {
+        page.__load
+      }.to output("loading source: a/views/path/file\n").to_stdout
+      site = Loki::Site.new
+
+      expect(FileUtils).to receive(:mkdir_p).with("b/path")
+      expect(File).to receive(:write).with("b/path/file.html", html)
+
+      expect {
+        page.__build(site)
+      }.to output("page: a/views/path/file ->\n" +
+                  "- writing: b/path/file.html\n\n").to_stdout
+    end
   end # context "page access"
 
   context "site access" do

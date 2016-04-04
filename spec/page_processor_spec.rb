@@ -332,8 +332,7 @@ describe "Loki::PageProcessor" do
       page.template = "template"
       page.body = "simple source\n"
 
-      msg = "Error on line 3 of file a/components/template:" +
-        "\ninvalid directive 'foo'\n\n"
+      msg = /^Error.*line 3.*invalid directive 'foo'.*context.*\{foo\}/m
 
       expect {
         expect {
@@ -344,8 +343,7 @@ describe "Loki::PageProcessor" do
 
     it "handles body include when not template" do
       page.body = "simple {body}\n"
-      msg = "Error on line 1 of file a/views/view:\n" +
-        "attempt to include body outside of template\n\n"
+      msg = /^Error.*line 1.*attempt to include body outside of template/m
 
       expect {
         Loki::PageProcessor.__process(page, site)
