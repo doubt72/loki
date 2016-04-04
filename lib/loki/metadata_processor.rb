@@ -1,8 +1,9 @@
 class Loki
   class MetadataProcessor
-    def self.eval(data, page)
+    def self.eval(data, page, site)
       begin
         @@current_page = page
+        @@global_site = site
         instance_eval data
         @@current_page
       rescue Exception => e
@@ -26,6 +27,11 @@ class Loki
       def set(key, value, &block)
         @@current_page.class.send(:attr_accessor, key)
         @@current_page.send(key.to_s + '=', value)
+      end
+
+      def global(key, value, &block)
+        @@global_site.class.send(:attr_accessor, key)
+        @@global_site.send(key.to_s + '=', value)
       end
 
       Loki::Page::META_SYMBOLS.each do |call|

@@ -19,7 +19,7 @@ class Loki
       @path_components = page
     end
 
-    def __load
+    def __load(site)
       puts "loading source: #{source_path}"
 
       file = File.read(source_path)
@@ -27,7 +27,7 @@ class Loki
       meta = file[/^.*?\n--\n/m]
       if (meta)
         meta = meta.gsub(/\n--\n$/m,'')
-        Loki::MetadataProcessor.eval(meta, self)
+        Loki::MetadataProcessor.eval(meta, self, site)
 
         0.upto(META_SYMBOLS.length - 1) do |x|
           __validate_type(META_SYMBOLS[x], META_TYPES[x])

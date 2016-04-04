@@ -9,7 +9,7 @@ describe "Loki::MetadataProcessor" do
       msg = "Error parsing metadata: invalid parameter 'foo'\n\n"
 
       expect {
-        Loki::MetadataProcessor.eval(data, page)
+        Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
       }.to raise_error(StandardError, msg)
     end
 
@@ -17,7 +17,7 @@ describe "Loki::MetadataProcessor" do
       data = "id 'foo'\n"
       page = Loki::Page.new("/a", "/b", ["view"])
 
-      Loki::MetadataProcessor.eval(data, page)
+      Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
       expect(page.id).to eq("foo")
     end
 
@@ -25,7 +25,7 @@ describe "Loki::MetadataProcessor" do
       data = "id 'foo'\ntitle 'bar'\n"
       page = Loki::Page.new("/a", "/b", ["view"])
 
-      Loki::MetadataProcessor.eval(data, page)
+      Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
       expect(page.id).to eq("foo")
       expect(page.title).to eq("bar")
     end
@@ -34,7 +34,7 @@ describe "Loki::MetadataProcessor" do
       data = "id do\n  'foo'\nend\n"
       page = Loki::Page.new("/a", "/b", ["view"])
 
-      Loki::MetadataProcessor.eval(data, page)
+      Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
       expect(page.id).to eq("foo")
     end
 
@@ -45,7 +45,7 @@ describe "Loki::MetadataProcessor" do
       msg = /Error parsing metadata.*syntax error.*/m
 
       expect {
-        Loki::MetadataProcessor.eval(data, page)
+        Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
       }.to raise_error(StandardError, msg)
     end
   end # context "eval"

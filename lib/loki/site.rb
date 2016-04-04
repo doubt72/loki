@@ -4,6 +4,11 @@ class Loki
       @pages = []
     end
 
+    def set(key, value, &block)
+      self.class.send(:attr_accessor, key)
+      self.send(key.to_s + '=', value)
+    end
+
     # loads page on add
     def __add_page(page)
       @pages.push(page)
@@ -13,7 +18,7 @@ class Loki
       ids = []
 
       @pages.each do |page|
-        page.__load
+        page.__load(self)
         if (page.id)
           if ids.include?(page.id)
             Loki::Utils.error("Error loading page: " +
