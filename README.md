@@ -182,5 +182,6 @@ will be a literal curly brace (`}`) instead of closing the context.
 
 ## To Do
 
+* manual-making stuff
 * favicon configuration
 * arbitrary head data
