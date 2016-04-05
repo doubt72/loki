@@ -22,7 +22,7 @@ describe "Loki::Site" do
 
       expect {
         site.__load_pages
-      }.to raise_exception(StandardError, msg)
+      }.to raise_error(StandardError, msg)
     end
   end # context "add"
 
@@ -54,7 +54,7 @@ describe "Loki::Site" do
 
       expect {
         site.__lookup_path("a", "b", "unknown")
-      }.to raise_exception(StandardError, msg)
+      }.to raise_error(StandardError, msg)
     end
   end # context "lookup"
 end # describe "Loki::Site"

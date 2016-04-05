@@ -48,4 +48,198 @@ describe "Loki" do
       }.to raise_error(StandardError, msg)
     end
   end # context "generate"
+
+  context "config.rb" do
+    it "is handled correctly" do
+      allow(Dir).to receive(:exists?).with("a").and_return(true)
+      allow(Dir).to receive(:exists?).with("b").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/views").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/assets").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/components").and_return(true)
+
+      allow(Loki::Utils).to receive(:tree).with("a/views").
+        and_return([["page"]])
+
+      allow(File).to receive(:exists?).with("a/config.rb").and_return(true)
+      allow(File).to receive(:read).with("a/config.rb").
+        and_return("set :id, 'id'\nset :foo, 'bar'")
+
+      allow(File).to receive(:read).with("a/views/page").
+        and_return("id site.id\n--\n{site.foo}")
+
+      allow(File).to receive(:exists?).with("a/config_load.rb").
+        and_return(false)
+
+      allow(FileUtils).to receive(:mkdir_p).with("b")
+
+      html = <<EOF
+<html>
+<body>
+bar</body>
+</html>
+EOF
+
+      expect(File).to receive(:write).with("b/page.html", html)
+
+      output = <<EOF
+manifest:
+[["page"]]
+
+loading source: a/views/page
+
+page: a/views/page ->
+- writing: b/page.html
+
+EOF
+
+      expect {
+        Loki.generate("a", "b")
+      }.to output(output).to_stdout
+    end
+
+    it "handles error" do
+      allow(Dir).to receive(:exists?).with("a").and_return(true)
+      allow(Dir).to receive(:exists?).with("b").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/views").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/assets").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/components").and_return(true)
+
+      allow(Loki::Utils).to receive(:tree).with("a/views").
+        and_return([["page"]])
+
+      allow(File).to receive(:exists?).with("a/config.rb").and_return(true)
+      allow(File).to receive(:read).with("a/config.rb").
+        and_return("nope")
+
+      output = <<EOF
+manifest:
+[["page"]]
+
+EOF
+
+      msg = /^Error reading a\/config.rb.*undefined.*nope/m
+
+      expect {
+        expect {
+          Loki.generate("a", "b")
+        }.to raise_error(StandardError, msg)
+      }.to output(output).to_stdout
+    end
+  end # context "config.rb"
+
+  context "config_load.rb" do
+    it "is handled correctly" do
+      allow(Dir).to receive(:exists?).with("a").and_return(true)
+      allow(Dir).to receive(:exists?).with("b").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/views").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/assets").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/components").and_return(true)
+
+      allow(Loki::Utils).to receive(:tree).with("a/views").
+        and_return([["page"]])
+
+      allow(File).to receive(:exists?).with("a/config.rb").and_return(false)
+
+      allow(File).to receive(:read).with("a/views/page").
+        and_return("id 'id'\n--\n{site.foo}")
+
+      allow(File).to receive(:exists?).with("a/config_load.rb").
+        and_return(true)
+      allow(File).to receive(:read).with("a/config_load.rb").
+        and_return("set :foo, 'bar'")
+
+      allow(FileUtils).to receive(:mkdir_p).with("b")
+
+      html = <<EOF
+<html>
+<body>
+bar</body>
+</html>
+EOF
+
+      expect(File).to receive(:write).with("b/page.html", html)
+
+      output = <<EOF
+manifest:
+[["page"]]
+
+loading source: a/views/page
+
+page: a/views/page ->
+- writing: b/page.html
+
+EOF
+
+      expect {
+        Loki.generate("a", "b")
+      }.to output(output).to_stdout
+    end
+
+    it "handles error" do
+      allow(Dir).to receive(:exists?).with("a").and_return(true)
+      allow(Dir).to receive(:exists?).with("b").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/views").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/assets").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/components").and_return(true)
+
+      allow(Loki::Utils).to receive(:tree).with("a/views").
+        and_return([["page"]])
+
+      allow(File).to receive(:exists?).with("a/config.rb").and_return(false)
+
+      allow(File).to receive(:read).with("a/views/page").
+        and_return("id 'id'\n--\n{site.foo}")
+
+      allow(File).to receive(:exists?).with("a/config_load.rb").
+        and_return(true)
+      allow(File).to receive(:read).with("a/config_load.rb").
+        and_return("nope")
+
+      output = <<EOF
+manifest:
+[["page"]]
+
+loading source: a/views/page
+EOF
+
+      msg = /^Error reading a\/config_load.rb.*undefined.*nope/m
+
+      expect {
+        expect {
+          Loki.generate("a", "b")
+        }.to raise_error(StandardError, msg)
+      }.to output(output).to_stdout
+    end
+
+    it "does not set values prematurely" do
+      allow(Dir).to receive(:exists?).with("a").and_return(true)
+      allow(Dir).to receive(:exists?).with("b").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/views").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/assets").and_return(true)
+      allow(Dir).to receive(:exists?).with("a/components").and_return(true)
+
+      allow(Loki::Utils).to receive(:tree).with("a/views").
+        and_return([["page"]])
+
+      allow(File).to receive(:exists?).with("a/config.rb").and_return(false)
+
+      allow(File).to receive(:read).with("a/views/page").
+        and_return("id site.nope\n--\n{site.foo}")
+
+      output = <<EOF
+manifest:
+[["page"]]
+
+loading source: a/views/page
+EOF
+
+      msg = /^Error parsing metadata.*undefined method.*nope/m
+
+      expect {
+        expect {
+          Loki.generate("a", "b")
+        }.to raise_error(StandardError, msg)
+      }.to output(output).to_stdout
+    end
+  end # context "config_load.rb"
 end # describe "Loki"

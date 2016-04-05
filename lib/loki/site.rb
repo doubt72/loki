@@ -9,7 +9,29 @@ class Loki
       self.send(key.to_s + '=', value)
     end
 
-    # loads page on add
+    def __eval(data, path)
+      begin
+        instance_eval data
+      rescue Exception => e
+        Loki::Utils.error("Error reading #{path}:\n#{e}")
+      end
+    end
+
+    def __read_eval(path)
+      if File.exists?(path)
+        file = File.read(path)
+        __eval(file, path)
+      end
+    end
+
+    def __read_config_rb(source_root)
+      __read_eval(File.join(source_root, 'config.rb'))
+    end
+
+    def __read_config_load_rb(source_root)
+      __read_eval(File.join(source_root, 'config_load.rb'))
+    end
+
     def __add_page(page)
       @pages.push(page)
     end

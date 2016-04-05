@@ -34,6 +34,14 @@ class Loki
         @@global_site.send(key.to_s + '=', value)
       end
 
+      def page
+        @@current_page
+      end
+
+      def site
+        @@global_site
+      end
+
       Loki::Page::META_SYMBOLS.each do |call|
         define_method(call) do |value = nil, &block|
           result = value

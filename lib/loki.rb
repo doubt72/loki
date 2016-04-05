@@ -23,7 +23,9 @@ class Loki
       site.__add_page(Loki::Page.new(source_path, dest_path, page))
     end
 
+    site.__read_config_rb(source_path)
     site.__load_pages
+    site.__read_config_load_rb(source_path)
 
     puts ""
 

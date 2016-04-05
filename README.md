@@ -137,7 +137,9 @@ The following parameters are available:
 
 Values must be inside strings (they are interpreted as ruby strings;
 values can also be returned from a `do`-`end` block).  You can also
-put arbitrary ruby code in the metadata.
+put arbitrary ruby code in the metadata.  The `site` and `page`
+objects can also be used to return values that are already set via
+`set` or `global` (or via the config hooks below).
 
 ## Loki Directives
 
@@ -170,7 +172,7 @@ interpretation scope:
   only be accessible from other pages being built after it; values set
   in metadata happen when the pages are loaded before any of the pages
   are built and any evaluation happens, so are available to all pages
-  no matter the order of processing.
+  no matter the order of processing.  Also see config hooks below.
 
 * `include(<partial>)`: includes another file from the components
   directory
@@ -201,9 +203,22 @@ will be a literal curly brace (`}`) instead of closing the context.
 You can put arbitrary ruby code into the evaluation blocks, e.g.,
 `{Time.now.year}` would insert the year at that point in the page.
 
+## Config Hooks
+
+There are two special files in the top level of the source directory
+that (if they exist) will be loaded at two different points in the
+run.  The first is `config.rb` which is run before loading any of the
+pages.  The second is `config_load.rb` which is run after all the pages are
+loaded but before they're built/evaluated.
+
+The contents of these files can be any arbitrary ruby, but the most
+important use for these files is to set global site values.  This is
+done with the `set` function.  For example, if the `config.rb`
+contains the line `set :foo, "bar"`, when `{site.foo}` is included in
+any of the pages on the site, it will insert `bar` at that point.
+
 ## To Do
 
 * manual-making stuff
 * favicon configuration
 * arbitrary head data
-* add special pre-evaluation file for setting globals

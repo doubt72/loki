@@ -48,5 +48,21 @@ describe "Loki::MetadataProcessor" do
         Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
       }.to raise_error(StandardError, msg)
     end
+
+    it "page returns the page" do
+      data = "id 'foo'\ntitle page.id"
+      page = Loki::Page.new("/a", "/b", ["view"])
+
+      Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
+      expect(page.title).to eq("foo")
+    end
+
+    it "site returns the site" do
+      data = "id site.class.to_s"
+      page = Loki::Page.new("/a", "/b", ["view"])
+
+      Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
+      expect(page.id).to eq("Loki::Site")
+    end
   end # context "eval"
 end # describe "Loki::MetadataProcessor"
