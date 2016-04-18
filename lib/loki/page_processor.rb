@@ -27,7 +27,6 @@ class Loki
           css_path = __make_relative_path("assets/#{css}",
                                           @@current_page.destination_path)
           head += "  <link rel=\"stylesheet\" href=\"#{css_path}\" " +
-#          head += "  <link rel=\"stylesheet\" href=\"assets/#{css}\" " +
             "type=\"text/css\" />\n"
           Loki::Utils.copy_asset(page.source_root, page.destination_root, css)
         end
@@ -37,7 +36,6 @@ class Loki
           js_path = __make_relative_path("assets/#{js}",
                                           @@current_page.destination_path)
           head += "  <script src=\"#{js_path}\" type=\"text/javascript\">" +
-#          head += "  <script src=\"assets/#{js}\" type=\"text/javascript\">" +
             "</script>\n"
           Loki::Utils.copy_asset(page.source_root, page.destination_root, js)
         end

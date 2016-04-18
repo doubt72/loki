@@ -32,7 +32,7 @@ class Loki
       source_path = File.join(source, 'assets', path)
       dest_path = File.join(dest, 'assets', path)
 
-      puts "- copy asset: #{source_path} -> #{dest_path}"
+      puts "- copy asset: #{source_path} ->\n    #{dest_path}"
 
       if !File.exists?(source_path)
         error("Error copying file: #{source_path} doesn't exist.")
