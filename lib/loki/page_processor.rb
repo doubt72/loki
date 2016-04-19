@@ -171,6 +171,9 @@ class Loki
         img_path = __make_relative_path("assets/#{path}",
                                         @@current_page.destination_path)
         rc = "<img src=\"#{img_path}\""
+        if (options[:alt])
+          rc += " alt=\"#{options[:alt]}\""
+        end
         rc += __handle_options(options)
         rc + " />"
       end

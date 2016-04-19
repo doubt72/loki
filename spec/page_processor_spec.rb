@@ -175,6 +175,11 @@ describe "Loki::PageProcessor" do
       expect(Loki::PageProcessor.image("x.png")).to eq(img)
     end
 
+    it "with alt text" do
+      img = '<img src="assets/x.png" alt="text" />'
+      expect(Loki::PageProcessor.image("x.png", {alt: "text"})).to eq(img)
+    end
+
     it "with option style" do
       img = '<img src="assets/x.png" style="style: style;" />'
       expect(Loki::PageProcessor.image("x.png",
