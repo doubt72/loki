@@ -9,6 +9,10 @@ class Loki
       self.send(key.to_s + '=', value)
     end
 
+    # Internal functions use '__' to avoid collisions with possible user-defined
+    # data and such, though in a pinch users COULD access if they understood the
+    # internals sufficiently. Not worth the bother to prevent, really, this is
+    # just to avoid accidents.
     def __eval(data, path)
       begin
         instance_eval data
@@ -54,15 +58,15 @@ class Loki
 
     def __build_pages
       @pages.each do |page|
-        page.__build(self)
+        page.__build
       end
     end
 
     def __lookup_path(source, dest, id)
-      # first look up 
+      # first look up
       @pages.each do |page|
         if (page.id && id == page.id)
-          return page.path_components.join("/") + ".html"
+          return page.__path_components.join("/") + ".html"
         end
       end
 
@@ -72,7 +76,7 @@ class Loki
         return "assets/#{id}"
       end
 
-      Loki::PageProcessor.__error("couldn't link to '#{id}', no match found.")
+      raise "couldn't link to '#{id}', no match found."
     end
   end
 end

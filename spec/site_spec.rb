@@ -1,14 +1,12 @@
 require 'spec_helper'
 
 describe "Loki::Site" do
+  let(:site) { Loki::Site.new }
+
   context "add" do
     it "handles duplicate ids" do
-      site = Loki::Site.new
       page = Loki::Page.new("a", "b", ["view"])
       page.id = "foo"
-
-      allow(page).to receive(:__load)
-      site.__add_page(page)
 
       page2 = Loki::Page.new("a", "b", ["view2"])
       page2.id = "foo"
@@ -18,6 +16,7 @@ describe "Loki::Site" do
       site.__add_page(page)
       site.__add_page(page2)
 
+      allow(page).to receive(:__load)
       allow(page2).to receive(:__load)
 
       expect {
@@ -28,7 +27,6 @@ describe "Loki::Site" do
 
   context "lookup" do
     it "can find id" do
-      site = Loki::Site.new
       page = Loki::Page.new("a", "b", ["view", "page"])
       page.id = "id"
 
@@ -38,8 +36,6 @@ describe "Loki::Site" do
     end
 
     it "can find asset" do
-      site = Loki::Site.new
-
       allow(File).to receive(:exists?).with("a/assets/id.png").and_return(true)
       allow(Loki::Utils).to receive(:copy_asset)
 
@@ -47,10 +43,7 @@ describe "Loki::Site" do
     end
 
     it "raises exception when no match found" do
-      site = Loki::Site.new
-
-      msg = "Error on line 1 of file a/views/path/file:\n" +
-        "couldn't link to 'unknown', no match found.\n\n"
+      msg = "couldn't link to 'unknown', no match found."
 
       expect {
         site.__lookup_path("a", "b", "unknown")

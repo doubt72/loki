@@ -1,74 +1,85 @@
 class Loki
   class PageProcessor
-    def self.__process(page, site)
-      @@context = :template
-      @@global_site = site
-      @@current_page = page
+    def initialize(page)
+      @page = page
+    end
 
-      if (page.template.nil?)
-        @@context = :body
-        page.html = __parse(page.body, page.source_path)
+    # Internal functions use '__' to avoid collisions with possible user-defined
+    # metadata and such, though in a pinch users COULD access if they understood
+    # the internals sufficiently. Not worth the bother to prevent, really, this
+    # is just to avoid accidents.
+    def __process
+      @context = :template
+
+      # If we have a template, we process that, otherwise we process the page
+      if (@page.template.nil?)
+        @context = :body
+        html = __parse(@page.__body, @page.__source_path)
       else
-        puts "- using template: #{page.template}"
-        page.html = __parse(Loki::Utils.load_component(page.source_root,
-                                                       page.template),
-                            File.join(page.source_root, 'components',
-                                      page.template))
+        puts "- using template: #{@page.template}"
+        html = __parse(Loki::Utils.load_component(@page.__source_root,
+                                                  @page.template),
+                       File.join(@page.__source_root, 'components',
+                                 @page.template))
       end
 
-      page.html = "<body>\n#{page.html}</body>\n"
+      html = "<body>\n#{html}</body>\n"
 
+      # Handle all the header stuff; title, css, js, etc.
       head = ""
-      if (page.title)
-        head = "  <title>#{page.title}</title>\n"
+      if (@page.title)
+        head = "  <title>#{@page.title}</title>\n"
       end
-      if (page.css)
-        page.css.each do |css|
+      if (@page.css)
+        @page.css.each do |css|
           css_path = __make_relative_path("assets/#{css}",
-                                          @@current_page.destination_path)
+                                          @page.__destination_path)
           head += "  <link rel=\"stylesheet\" href=\"#{css_path}\" " +
             "type=\"text/css\" />\n"
-          Loki::Utils.copy_asset(page.source_root, page.destination_root, css)
+          Loki::Utils.copy_asset(@page.__source_root,
+                                 @page.__destination_root, css)
         end
       end
-      if (page.javascript)
-        page.javascript.each do |js|
+      if (@page.javascript)
+        @page.javascript.each do |js|
           js_path = __make_relative_path("assets/#{js}",
-                                          @@current_page.destination_path)
+                                          @page.__destination_path)
           head += "  <script src=\"#{js_path}\" type=\"text/javascript\">" +
             "</script>\n"
-          Loki::Utils.copy_asset(page.source_root, page.destination_root, js)
+          Loki::Utils.copy_asset(@page.__source_root,
+                                 @page.__destination_root, js)
         end
       end
       if (head.length > 0)
-        page.html = "<head>\n#{head}</head>\n#{page.html}"
+        html = "<head>\n#{head}</head>\n#{html}"
       end
-
       # TODO: deal with headers
-      page.html = "<html>\n#{page.html}</html>\n"
+
+      @page.__html = "<html>\n#{html}</html>\n"
     end
 
-    def self.__parse(source, path)
-      line = 1
+    def __parse(source, path)
+      @eval_path = path
+      @eval_line = 1
       html = ""
-      inside = false
-      escape = false
+      inside_eval_context = false
+      checking_for_escape = false
       buffer = ""
       0.upto(source.length - 1) do |index|
         char = source[index]
         if (char == "\n")
-          line += 1
+          @eval_line += 1
         end
-        if inside
-          if (char == '}' && escape)
-            escape = false
+        if inside_eval_context
+          if (char == '}' && checking_for_escape)
+            checking_for_escape = false
             buffer += char
           elsif (char == '}' && source[index + 1] == '}')
-            escape = true
+            checking_for_escape = true
           elsif (char == '}')
-            inside = false
+            inside_eval_context = false
             begin
-              html += String(__eval(buffer, path, line))
+              html += String(__eval(buffer))
             rescue Exception => e
               raise "#{e}\nEvaluation context: {#{buffer}}\n\n"
             end
@@ -76,31 +87,29 @@ class Loki
           else
             buffer += char
             if (buffer == "{")
-              inside = false
+              inside_eval_context = false
               html += "{"
               buffer = ""
             end
           end
         else
           if (char == '{')
-            inside = true
+            inside_eval_context = true
           else
             html += char
           end
         end
       end
-      if inside
+      if inside_eval_context
         __error("unexpected end-of-file; no matching '}'")
       end
 
       html
     end
 
-    def self.__eval(data, path, line)
-      @@eval_path = path
-      @@eval_line = line
+    def __eval(data)
       begin
-        instance_eval(data)
+        instance_eval data
       rescue Exception => e
         if (e.message =~ /^Error on line.*of file/)
           raise e
@@ -110,134 +119,134 @@ class Loki
       end
     end
 
-    def self.__error(msg)
-      Loki::Utils.error("Error on line #{@@eval_line} of " +
-                        "file #{@@eval_path}:\n#{msg}")
+    def __error(msg)
+      Loki::Utils.error("Error on line #{@eval_line} of " +
+                        "file #{@eval_path}:\n#{msg}")
     end
 
-    class << self
-      def method_missing(name, *args, &block)
-        __error("invalid directive '#{name}'")
+    def method_missing(name, *args, &block)
+      __error("invalid directive '#{name}'")
+    end
+
+    # Template insert body
+    def body
+      if (@context == :body)
+        __error("attempt to include body outside of template")
+      end
+      @context = :body
+      __parse(@page.__body, @page.__source_path)
+    end
+
+    # Include a file
+    def include(path, &block)
+      puts "- including partial: #{path}"
+      __parse(Loki::Utils.load_component(@page.__source_root, path),
+      File.join(@page.__source_root, 'components', path))
+    end
+
+    # Absolute link
+    def link_abs(url, text, options = {})
+      rc = "<a href=\"#{url}\""
+      rc += __handle_options(options)
+      rc + ">#{text}</a>"
+    end
+
+    # Relative link
+    def link(id, text, options = {})
+      path = @page.__site.__lookup_path(@page.__source_root,
+      @page.__destination_root, id)
+
+      path = __make_relative_path(path, @page.__destination_path)
+      if (options[:append])
+        path += options[:append]
       end
 
-      # Template insert body
-      def body
-        if (@@context == :body)
-          __error("attempt to include body outside of template")
-        end
-        @@context = :body
-        __parse(@@current_page.body, @@current_page.source_path)
-      end
-
-      # Include a file
-      def include(path, &block)
-        puts "- including partial: #{path}"
-        __parse(Loki::Utils.load_component(@@current_page.source_root, path),
-                File.join(@@current_page.source_root, 'components', path))
-      end
-
-      # Absolute link
-      def link_abs(url, text, options = {})
-        rc = "<a href=\"#{url}\""
-        rc += __handle_options(options)
-        rc + ">#{text}</a>"
-      end
-
-      # Relative link
-      def link(id, text, options = {})
-        path = @@global_site.__lookup_path(@@current_page.source_root,
-                                           @@current_page.destination_root, id)
-
-        path = __make_relative_path(path, @@current_page.destination_path)
-        if (options[:append])
-          path += options[:append]
-        end
-
-        if (options[:self_class] && id == @@current_page.id)
-          if (options[:class])
-            options[:class] = "#{options[:self_class]} #{options[:class]}"
-          else
-            options[:class] = options[:self_class]
-          end
-        end
-
-        link_abs(path, text, options)
-      end
-
-      # Image
-      def image(path, options = {})
-        Loki::Utils.copy_asset(@@current_page.source_root,
-                               @@current_page.destination_root, path)
-        img_path = __make_relative_path("assets/#{path}",
-                                        @@current_page.destination_path)
-        rc = "<img src=\"#{img_path}\""
-        if (options[:alt])
-          rc += " alt=\"#{options[:alt]}\""
-        end
-        rc += __handle_options(options)
-        rc + " />"
-      end
-
-      def manual_ref(path, text = nil)
-        if (@@current_page.__manual_data.nil?)
-          __error("no manual data defined, cannot build link")
-        end
-        if (text.nil?)
-          text = path.split('|')[-1]
-        end
-        "<a href=\"##{@@current_page.__manual_data.name_to_section_index(path)}\">#{text}</a>"
-      end
-
-      def render_manual
-        if (@@current_page.__manual_data.nil?)
-          __error("no manual data defined, cannot render")
-        end
-        @@current_page.__manual_data.render(@@current_page.source_path)
-      end
-
-      def __make_relative_path(path, here)
-        path_parts = path.split("/")[0 .. -2]
-        here_parts = here.split("/")[1 .. -2]
-
-        target = path.split("/")[-1]
-
-        while(path_parts.length > 0 && here_parts.length > 0 &&
-              path_parts[0] == here_parts[0])
-          path_parts = path_parts[1 .. -1]
-          here_parts = here_parts[1 .. -1]
-        end
-
-        new_parts = here_parts.collect {|x| '..'}
-        new_parts += path_parts
-        new_parts.push(target)
-
-        new_parts.join("/")
-      end
-
-      # Page
-      def page
-        @@current_page
-      end
-
-      # Site
-      def site
-        @@global_site
-      end
-
-      # Helper functions
-      def __handle_options(options = {})
-        rc = ""
-        if (options[:id])
-          rc += " id=\"#{options[:id]}\""
-        end
+      if (options[:self_class] && id == @page.id)
         if (options[:class])
-          rc += " class=\"#{options[:class]}\""
+          options[:class] = "#{options[:self_class]} #{options[:class]}"
+        else
+          options[:class] = options[:self_class]
         end
-        if (options[:style])
-          rc += " style=\"#{options[:style]}\""
-        end
-        rc
       end
+
+      link_abs(path, text, options)
+    end
+
+    # Image
+    def image(path, options = {})
+      Loki::Utils.copy_asset(@page.__source_root,
+      @page.__destination_root, path)
+      img_path = __make_relative_path("assets/#{path}",
+      @page.__destination_path)
+      rc = "<img src=\"#{img_path}\""
+      if (options[:alt])
+        rc += " alt=\"#{options[:alt]}\""
+      end
+      rc += __handle_options(options)
+      rc + " />"
+    end
+
+    # Relative link to manual section
+    def manual_ref(path, text = nil)
+      if (@page.__manual_data.nil?)
+        __error("no manual data defined, cannot create link")
+      end
+      if (text.nil?)
+        text = path.split('|')[-1]
+      end
+      "<a href=\"##{@page.__manual_data.name_to_section_index(path)}\">#{text}</a>"
+    end
+
+    # Render full manual
+    def render_manual
+      if (@page.__manual_data.nil?)
+        __error("no manual data defined, cannot render")
+      end
+      @page.__manual_data.render(@page.__source_path)
+    end
+
+    def __make_relative_path(path, here)
+      path_parts = path.split("/")[0 .. -2]
+      here_parts = here.split("/")[1 .. -2]
+
+      target = path.split("/")[-1]
+
+      while(path_parts.length > 0 && here_parts.length > 0 &&
+        path_parts[0] == here_parts[0])
+        path_parts = path_parts[1 .. -1]
+        here_parts = here_parts[1 .. -1]
+      end
+
+      new_parts = here_parts.collect {|x| '..'}
+      new_parts += path_parts
+      new_parts.push(target)
+
+      new_parts.join("/")
+    end
+
+    # Page
+    def page
+      @page
+    end
+
+    # Site
+    def site
+      @page.__site
+    end
+
+    # Helper functions
+    def __handle_options(options = {})
+      rc = ""
+      if (options[:id])
+        rc += " id=\"#{options[:id]}\""
+      end
+      if (options[:class])
+        rc += " class=\"#{options[:class]}\""
+      end
+      if (options[:style])
+        rc += " style=\"#{options[:style]}\""
+      end
+      rc
     end
   end
 end

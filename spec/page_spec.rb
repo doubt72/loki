@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe "Loki::Page" do
   let(:page) { Loki::Page.new("a", "b", ["path", "file"]) }
+  let(:site) { Loki::Site.new }
 
   context "load" do
     it "works" do
@@ -9,18 +10,18 @@ describe "Loki::Page" do
         and_return("id \"id\"\n--\n--\nstuff\n")
 
       expect {
-        page.__load(Loki::Site.new)
+        page.__load(site)
       }.to output("loading source: a/views/path/file\n").to_stdout
 
       expect(page.id).to eq("id")
-      expect(page.body).to eq("--\nstuff\n")
+      expect(page.__body).to eq("--\nstuff\n")
     end
   end # context "load"
 
   context "build" do
     it "works" do
       page.id = "id"
-      page.body = "one + one = {1 + 1}\n"
+      page.__body = "one + one = {1 + 1}\n"
 
       html = <<EOF
 <html>
@@ -30,13 +31,11 @@ one + one = 2
 </html>
 EOF
 
-      site = Loki::Site.new
-
       expect(FileUtils).to receive(:mkdir_p).with("b/path")
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.__build(site)
+        page.__build
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -55,7 +54,6 @@ stuff: id
 </html>
 EOF
 
-      site = Loki::Site.new
       expect {
         page.__load(site)
       }.to output("loading source: a/views/path/file\n").to_stdout
@@ -64,7 +62,7 @@ EOF
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.__build(site)
+        page.__build
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -83,7 +81,6 @@ also: bar
 </html>
 EOF
 
-      site = Loki::Site.new
       expect {
         page.__load(site)
       }.to output("loading source: a/views/path/file\n").to_stdout
@@ -92,7 +89,7 @@ EOF
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.__build(site)
+        page.__build
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -112,7 +109,6 @@ also: bar
 </html>
 EOF
 
-      site = Loki::Site.new
       expect {
         page.__load(site)
       }.to output("loading source: a/views/path/file\n").to_stdout
@@ -133,12 +129,12 @@ EOF
 
       # Swap the order as a minimal test of ordering
       expect {
-        page2.__build(site)
+        page2.__build
       }.to output("page: a/views/path/file2 ->\n" +
                   "- writing: b/path/file2.html\n\n").to_stdout
 
       expect {
-        page.__build(site)
+        page.__build
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -158,7 +154,6 @@ also: bar
 </html>
 EOF
 
-      site = Loki::Site.new
       expect {
         page.__load(site)
       }.to output("loading source: a/views/path/file\n").to_stdout
@@ -167,7 +162,7 @@ EOF
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.__build(site)
+        page.__build
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -187,7 +182,6 @@ stuff: path/file.html
 </html>
 EOF
 
-      site = Loki::Site.new
       site.__add_page(page)
       expect {
         site.__load_pages
@@ -197,7 +191,7 @@ EOF
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.__build(site)
+        page.__build
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -205,8 +199,8 @@ EOF
 
   context "source and dest" do
     it "returns source file and dest paths" do
-      expect(page.source_path).to eq("a/views/path/file")
-      expect(page.destination_path).to eq("b/path/file.html")
+      expect(page.__source_path).to eq("a/views/path/file")
+      expect(page.__destination_path).to eq("b/path/file.html")
     end
   end # context "source and dest"
 

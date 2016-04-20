@@ -1,7 +1,12 @@
 require 'spec_helper'
 
 describe "Loki::MetadataProcessor" do
-  let(:page) {Loki::Page.new("/a", "/b", ["view"])}
+  let(:page) { Loki::Page.new("/a", "/b", ["page"]) }
+  let(:m_proc) { Loki::MetadataProcessor.new(page) }
+
+  before(:each) do
+    allow(page).to receive(:__site).and_return(Loki::Site.new)
+  end
 
   context "eval" do
     it "handles undefined param" do
@@ -10,21 +15,21 @@ describe "Loki::MetadataProcessor" do
       msg = "Error parsing metadata: invalid parameter 'foo'\n\n"
 
       expect {
-        Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
+        m_proc.__eval(data)
       }.to raise_error(StandardError, msg)
     end
 
     it "handles defined param" do
       data = "id 'foo'\n"
 
-      Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
+      m_proc.__eval(data)
       expect(page.id).to eq("foo")
     end
 
     it "handles multiple params" do
       data = "id 'foo'\ntitle 'bar'\n"
 
-      Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
+      m_proc.__eval(data)
       expect(page.id).to eq("foo")
       expect(page.title).to eq("bar")
     end
@@ -32,7 +37,7 @@ describe "Loki::MetadataProcessor" do
     it "handles block param" do
       data = "id do\n  'foo'\nend\n"
 
-      Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
+      m_proc.__eval(data)
       expect(page.id).to eq("foo")
     end
 
@@ -42,28 +47,28 @@ describe "Loki::MetadataProcessor" do
       msg = /Error parsing metadata.*syntax error.*/m
 
       expect {
-        Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
+        m_proc.__eval(data)
       }.to raise_error(StandardError, msg)
     end
 
     it "page returns the page" do
       data = "id 'foo'\ntitle page.id"
 
-      Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
+      m_proc.__eval(data)
       expect(page.title).to eq("foo")
     end
 
     it "site returns the site" do
       data = "id site.class.to_s"
 
-      Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
+      m_proc.__eval(data)
       expect(page.id).to eq("Loki::Site")
     end
 
     it "manual_data loads data" do
       data = "manual_data ['manual', 'intro', ['section', 'section text']]"
 
-      Loki::MetadataProcessor.eval(data, page, Loki::Site.new)
+      m_proc.__eval(data)
       expect(page.__manual_data.class).to eq(Loki::Manual)
       expect(page.__manual_data.name_to_section_index('Introduction')).
         to eq('1')

@@ -20,6 +20,8 @@ class Loki
 
     site = Loki::Site.new
 
+    # Internal functions use '__' to avoid collisions with possible
+    # user-defined metadata and such
     manifest.each do |page|
       site.__add_page(Loki::Page.new(source_path, dest_path, page))
     end

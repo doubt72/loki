@@ -1,15 +1,8 @@
 require 'spec_helper'
 
-# Attrs for inspection
+# Add attrs for class inspection
 class Loki::Manual
   attr_reader :name, :introduction, :sections
-end
-
-# Current page
-class Loki::PageProcessor
-  def self.set_current_page(page)
-    @@current_page = page
-  end
 end
 
 describe "Loki::Manual" do
@@ -24,6 +17,7 @@ describe "Loki::Manual" do
     ]
   }
   let(:page) { Loki::Page.new('a', 'b', ['page']) }
+  let(:p_proc) { Loki::PageProcessor.new(page) }
   let(:manual) { Loki::Manual.new(manual_data, page) }
 
   let(:manual_html) do
@@ -89,7 +83,6 @@ EOF
 
   context "render" do
     it "renders simple manual" do
-
       expect(manual.render('path')).to eq(manual_html)
     end
 
@@ -104,7 +97,6 @@ EOF
 
       it "inserts reference link" do
         page.__init_manual_data(manual_data)
-        Loki::PageProcessor.set_current_page(page)
 
         html = <<EOF
 <h1><span id="1"></span>manual</h1>
@@ -124,13 +116,12 @@ EOF
       end
     end # context "with reference"
 
-    context "render directive" do
+    context "render_manual directive" do
       it "integration test" do
         page.__init_manual_data(manual_data)
-        Loki::PageProcessor.set_current_page(page)
 
         page.id = "id"
-        page.body = "{render_manual}\n"
+        page.__body = "{render_manual}\n"
 
         html = <<EOF
 <html>
@@ -140,13 +131,11 @@ EOF
 </html>
 EOF
 
-        site = Loki::Site.new
-
         expect(FileUtils).to receive(:mkdir_p).with("b")
         expect(File).to receive(:write).with("b/page.html", html)
 
         expect {
-          page.__build(site)
+          page.__build
         }.to output("page: a/views/page ->\n" +
                     "- writing: b/page.html\n\n").to_stdout
       end

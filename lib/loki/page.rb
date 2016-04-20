@@ -2,8 +2,8 @@ require 'fileutils'
 
 class Loki
   class Page
-    attr_accessor :source_root, :destination_root, :path_components
-    attr_accessor :body, :html
+    attr_reader :__source_root, :__destination_root, :__path_components
+    attr_accessor :__body, :__html
 
     META_SYMBOLS = %i(id title template tags css javascript)
     META_TYPES = %i(string string string string_array string_array
@@ -14,38 +14,45 @@ class Loki
     end
 
     def initialize(source_root, destination_root, page)
-      @source_root = source_root
-      @destination_root = destination_root
-      @path_components = page
+      @__source_root = source_root
+      @__destination_root = destination_root
+      @__path_components = page
     end
 
+    # Internal functions use '__' to avoid collisions with possible user-defined
+    # data and such, though in a pinch users COULD access if they understood the
+    # internals sufficiently. Not worth the bother to prevent, really, this is
+    # just to avoid accidents.
     def __load(site)
-      puts "loading source: #{source_path}"
+      @site = site
+      puts "loading source: #{__source_path}"
 
-      file = File.read(source_path)
+      file = File.read(__source_path)
 
       meta = file[/^.*?\n--\n/m]
       if (meta)
         meta = meta.gsub(/\n--\n$/m,'')
-        Loki::MetadataProcessor.eval(meta, self, site)
+        m_proc = Loki::MetadataProcessor.new(self)
+        m_proc.__eval(meta)
 
         0.upto(META_SYMBOLS.length - 1) do |x|
           __validate_type(META_SYMBOLS[x], META_TYPES[x])
         end
       end
 
-      @body = file.gsub(/^.*?\n--\n/m,'')
+      @__body = file.gsub(/^.*?\n--\n/m,'')
     end
 
-    def __build(site)
-      puts "page: #{source_path} ->"
+    def __build
+      puts "page: #{__source_path} ->"
 
-      Loki::PageProcessor.__process(self, site)
+      p_proc = Loki::PageProcessor.new(self)
+      p_proc.__process
 
-      dir = File.dirname(destination_path)
+      dir = File.dirname(__destination_path)
       FileUtils.mkdir_p(dir)
-      puts "- writing: #{destination_path}"
-      File.write(destination_path, html)
+      puts "- writing: #{__destination_path}"
+      File.write(__destination_path, __html)
 
       puts ""
     end
@@ -55,12 +62,16 @@ class Loki
       self.send(key.to_s + '=', value)
     end
 
-    def source_path
-      File.join(source_root, 'views', path_components)
+    def __site
+      @site
     end
 
-    def destination_path
-      File.join(destination_root, path_components) + ".html"
+    def __source_path
+      File.join(__source_root, 'views', __path_components)
+    end
+
+    def __destination_path
+      File.join(__destination_root, __path_components) + ".html"
     end
 
     def __init_manual_data(data)
