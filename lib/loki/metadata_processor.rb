@@ -42,6 +42,10 @@ class Loki
         @@global_site
       end
 
+      def manual_data(data)
+        @@current_page.__init_manual_data(data)
+      end
+
       Loki::Page::META_SYMBOLS.each do |call|
         define_method(call) do |value = nil, &block|
           result = value

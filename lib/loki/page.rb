@@ -63,6 +63,14 @@ class Loki
       File.join(destination_root, path_components) + ".html"
     end
 
+    def __init_manual_data(data)
+      @manual_data = Loki::Manual.new(data, self)
+    end
+
+    def __manual_data
+      @manual_data
+    end
+
     def __validate_type(parameter, type)
       value = send(parameter)
       if (value.nil?)

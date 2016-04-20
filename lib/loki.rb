@@ -6,6 +6,7 @@ require 'loki/site'
 require 'loki/page'
 require 'loki/metadata_processor'
 require 'loki/page_processor'
+require 'loki/manual'
 
 class Loki
   def self.generate(source_path, dest_path)
@@ -52,4 +53,3 @@ class Loki
     end
   end
 end
-

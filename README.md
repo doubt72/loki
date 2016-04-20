@@ -131,6 +131,9 @@ The following parameters are available:
   Unlike with `set`, this value can be accessed in the body of any page on the
   site, not just the current page.
 
+* `manual_data`: data for generating online manuals; see the manuals section
+  below.
+
 Values must be inside strings (they are interpreted as ruby strings; values can
 also be returned from a `do`-`end` block).  You can also put arbitrary ruby code
 in the metadata.  The `site` and `page` objects can also be used to return
@@ -181,6 +184,14 @@ following directives are available in the interpretation scope:
 * `image(<path>)`: inserts an image.  Image must exist in source assets
   directory and will be copied to the destination directory.
 
+* `manual_ref(<section>, <text>)`: relative link to another section of a manual.
+  This will render `<text>` with a link to the correct section of the manual; if
+  `<text>` is omitted, the section name will be used.  See the manuals section
+  below for more information.
+
+* `render_manual`: generates manual HTML from manual data as defined in the
+  metadata; see the manuals section below.
+
 `link`, `link_abs`, and `image` can be passed an options hash as the last
 argument; an `:id` key is used for ids, `:class` for classes, and `:style` for
 styles.  Passing the option `:self_class` to links will instruct them to use the
@@ -207,6 +218,62 @@ use for these files is to set global site values.  This is done with the `set`
 function.  For example, if the `config.rb` contains the line `set :foo, "bar"`,
 when `{site.foo}` is included in any of the pages on the site, it will insert
 `bar` at that point.
+
+## Automatically Generating Manuals
+
+Loki has built-in directives for generating dynamic manuals. The way this works
+is that the data (text/html) used to build the manual is defined in the page
+metadata with the `manual_data` directive, and the `render_manual` directive is
+used in the body to render it.
+
+The data for the manual must be list defined as such:
+
+```
+[<manual-name>, <introduction-text>, <section>, <section>...]
+```
+
+Where each section in the list of sections follows the same format:
+
+```
+[<section-name>, <text>, <optional-subsections>, <optional-subsection>...]
+```
+
+Where the optional subsections can be omitted if none exist.
+
+For instance, a very simple manual might look like this:
+
+```
+["My Manual",
+  "This is some introductory text",
+  ["First Section",
+    "This is the first section text"],
+  ["Second Section",
+    "This is the second section text",
+    ["Subsection", "This is text for a subsection"],
+    ["Another Subsection", "This is text for another subsection"]
+  ],
+  ["Third Section",
+    "This is the third section text"]
+]
+```
+
+Each of the sections will be automatically numbered and inserted in turn with
+the `render_manual` directive, with a table of contents inserted after the
+introduction text.  The sections can be regular HTML and will be inserted
+after sections headers.  Each of the sections will be parsed, so any Loki
+directives can be used; in particular, the `manual_ref` directive can be used to
+make relative links to other sections.  References to other sections are made by
+name, and must include the entire hierarchy separated by pipes (`|`), i.e., the
+first subsection above would be referred to as so:
+
+```
+manual_ref('Second Section|Subsection')
+```
+
+If the section doesn't exist, it will raise an error.  Note that section `1`
+will always be referred to as `Introduction` in the table of contents and should
+be referred to the same way by `manual_ref`; the first header will be the manual
+name as supplied to `manual_data`, however.
 
 ## To Do
 

@@ -178,6 +178,23 @@ class Loki
         rc + " />"
       end
 
+      def manual_ref(path, text = nil)
+        if (@@current_page.__manual_data.nil?)
+          __error("no manual data defined, cannot build link")
+        end
+        if (text.nil?)
+          text = path.split('|')[-1]
+        end
+        "<a href=\"##{@@current_page.__manual_data.name_to_section_index(path)}\">#{text}</a>"
+      end
+
+      def render_manual
+        if (@@current_page.__manual_data.nil?)
+          __error("no manual data defined, cannot render")
+        end
+        @@current_page.__manual_data.render(@@current_page.source_path)
+      end
+
       def __make_relative_path(path, here)
         path_parts = path.split("/")[0 .. -2]
         here_parts = here.split("/")[1 .. -2]
