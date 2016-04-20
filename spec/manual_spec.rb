@@ -83,7 +83,7 @@ EOF
 
   context "render" do
     it "renders simple manual" do
-      expect(manual.render('path')).to eq(manual_html)
+      expect(manual.render).to eq(manual_html)
     end
 
     context "with reference" do
@@ -112,7 +112,7 @@ intro
 <h2><a href="#ret-3"><span id="3">3</span> sec2</a></h2>
 <a href="#2">sec1</a>
 EOF
-        expect(manual.render('path')).to eq(html)
+        expect(manual.render).to eq(html)
       end
     end # context "with reference"
 

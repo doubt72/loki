@@ -79,7 +79,9 @@ class Loki
           elsif (char == '}')
             inside_eval_context = false
             begin
-              html += String(__eval(buffer, path, line))
+              @parse_path = path
+              @parse_line = line
+              html += String(__eval(buffer))
             rescue Exception => e
               raise "#{e}\nEvaluation context: {#{buffer}}\n\n"
             end
@@ -101,17 +103,15 @@ class Loki
         end
       end
       if inside_eval_context
-        @eval_path = path
-        @eval_line = line
+        @parse_path = path
+        @parse_line = line
         __error("unexpected end-of-file; no matching '}'")
       end
 
       html
     end
 
-    def __eval(data, path, line)
-      @eval_path = path
-      @eval_line = line
+    def __eval(data)
       begin
         instance_eval data
       rescue Exception => e
@@ -124,8 +124,8 @@ class Loki
     end
 
     def __error(msg)
-      Loki::Utils.error("Error on line #{@eval_line} of " +
-                        "file #{@eval_path}:\n#{msg}")
+      Loki::Utils.error("Error on line #{@parse_line} of " +
+                        "file #{@parse_path}:\n#{msg}")
     end
 
     def method_missing(name, *args, &block)
@@ -145,7 +145,7 @@ class Loki
     def include(path, &block)
       puts "- including partial: #{path}"
       __parse(Loki::Utils.load_component(@page.__source_root, path),
-      File.join(@page.__source_root, 'components', path))
+        File.join(@page.__source_root, 'components', path))
     end
 
     # Absolute link
@@ -179,9 +179,9 @@ class Loki
     # Image
     def image(path, options = {})
       Loki::Utils.copy_asset(@page.__source_root,
-      @page.__destination_root, path)
+        @page.__destination_root, path)
       img_path = __make_relative_path("assets/#{path}",
-      @page.__destination_path)
+        @page.__destination_path)
       rc = "<img src=\"#{img_path}\""
       if (options[:alt])
         rc += " alt=\"#{options[:alt]}\""
@@ -206,7 +206,7 @@ class Loki
       if (@page.__manual_data.nil?)
         __error("no manual data defined, cannot render")
       end
-      @page.__manual_data.render(@page.__source_path)
+      @page.__manual_data.render
     end
 
     def __make_relative_path(path, here)

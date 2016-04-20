@@ -56,11 +56,13 @@ class Loki
       nil
     end
 
-    def render(path)
+    def render
       @p_proc = Loki::PageProcessor.new(@page)
 
+      manual_section = "#{@page.__source_path} manual section 1 Introduction"
+
       html = "<h1><span id=\"1\"></span>#{@name}</h1>\n"
-      html += "#{@p_proc.__parse(@introduction, path)}\n"
+      html += "#{@p_proc.__parse(@introduction, manual_section)}\n"
       html += "<h2>Contents</h2>\n"
       html += "<ul class=\"toc\">\n"
       html += "<li><a href=\"#1\">1 Introduction</li>\n"
@@ -71,7 +73,7 @@ class Loki
       html += "</ul>\n"
 
       @sections.each do |section|
-        html += __render_section(section, path, 0)
+        html += __render_section(section, 0)
       end
 
       html
@@ -92,14 +94,17 @@ class Loki
       html
     end
 
-    def __render_section(section, path, depth)
+    def __render_section(section, depth)
+      manual_section = "#{@page.__source_path} manual section " +
+        "#{section[1]} #{section[0]}"
+
       html = "<h#{depth+2}><a href=\"#ret-#{section[1]}\">"
       html += "<span id=\"#{section[1]}\">#{section[1]}</span>"
       html += " #{section[0]}</a></h#{depth+2}>\n"
-      html += @p_proc.__parse(section[2], path) + "\n"
+      html += @p_proc.__parse(section[2], manual_section) + "\n"
       if (section.length > 3)
         section[3..-1].each do |subsec|
-          html += __render_section(subsec, path, depth + 1)
+          html += __render_section(subsec, depth + 1)
         end
       end
 

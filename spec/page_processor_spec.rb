@@ -1,5 +1,10 @@
 require 'spec_helper'
 
+# For injecting test values into the class
+class Loki::PageProcessor
+  attr_writer :parse_path, :parse_line
+end
+
 describe "Loki::PageProcessor" do
   let(:page) { Loki::Page.new('a', 'b', ['page']) }
   let(:p_proc) { Loki::PageProcessor.new(page) }
@@ -181,24 +186,30 @@ describe "Loki::PageProcessor" do
       data = 'link_abs("url", "text")'
       html = '<a href="url">text</a>'
 
-      expect(p_proc.__eval(data, 'path', 7)).to eq(html)
+      expect(p_proc.__eval(data)).to eq(html)
     end
 
     it "handles bad directive" do
       data = 'noyo'
+      p_proc.parse_line = 7
+      p_proc.parse_path = 'path'
+
       msg = /Error on line 7 of file path.*invalid directive 'noyo'/m
 
       expect {
-        p_proc.__eval(data, 'path', 7)
+        p_proc.__eval(data)
       }.to raise_error(StandardError, msg)
     end
 
     it "handles syntax error" do
       data = 'link_abs('
+      p_proc.parse_line = 7
+      p_proc.parse_path = 'path'
+      
       msg = /Error on line 7 of file path.*syntax error/m
 
       expect {
-        p_proc.__eval(data, 'path', 7)
+        p_proc.__eval(data)
       }.to raise_error(StandardError, msg)
     end
   end # context "eval"
