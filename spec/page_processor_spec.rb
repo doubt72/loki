@@ -181,24 +181,24 @@ describe "Loki::PageProcessor" do
       data = 'link_abs("url", "text")'
       html = '<a href="url">text</a>'
 
-      expect(p_proc.__eval(data)).to eq(html)
+      expect(p_proc.__eval(data, 'path', 7)).to eq(html)
     end
 
     it "handles bad directive" do
       data = 'noyo'
-      msg = /Error on line.*invalid directive 'noyo'/m
+      msg = /Error on line 7 of file path.*invalid directive 'noyo'/m
 
       expect {
-        p_proc.__eval(data)
+        p_proc.__eval(data, 'path', 7)
       }.to raise_error(StandardError, msg)
     end
 
     it "handles syntax error" do
       data = 'link_abs('
-      msg = /Error on line.*syntax error/m
+      msg = /Error on line 7 of file path.*syntax error/m
 
       expect {
-        p_proc.__eval(data)
+        p_proc.__eval(data, 'path', 7)
       }.to raise_error(StandardError, msg)
     end
   end # context "eval"

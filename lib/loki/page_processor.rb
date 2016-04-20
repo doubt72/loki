@@ -59,8 +59,8 @@ class Loki
     end
 
     def __parse(source, path)
-      @eval_path = path
-      @eval_line = 1
+      path = path
+      line = 1
       html = ""
       inside_eval_context = false
       checking_for_escape = false
@@ -68,7 +68,7 @@ class Loki
       0.upto(source.length - 1) do |index|
         char = source[index]
         if (char == "\n")
-          @eval_line += 1
+          line += 1
         end
         if inside_eval_context
           if (char == '}' && checking_for_escape)
@@ -79,7 +79,7 @@ class Loki
           elsif (char == '}')
             inside_eval_context = false
             begin
-              html += String(__eval(buffer))
+              html += String(__eval(buffer, path, line))
             rescue Exception => e
               raise "#{e}\nEvaluation context: {#{buffer}}\n\n"
             end
@@ -101,13 +101,17 @@ class Loki
         end
       end
       if inside_eval_context
+        @eval_path = path
+        @eval_line = line
         __error("unexpected end-of-file; no matching '}'")
       end
 
       html
     end
 
-    def __eval(data)
+    def __eval(data, path, line)
+      @eval_path = path
+      @eval_line = line
       begin
         instance_eval data
       rescue Exception => e
