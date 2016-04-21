@@ -25,7 +25,7 @@ describe "Loki::Manual" do
     html = <<EOF
 <h1><span id="1"></span>manual</h1>
 intro
-<h2>Contents</h2>
+<h1>Table of Contents</h1>
 <ul class="toc">
 <li><a href="#1">1 Introduction</li>
 <li><a href="#2"><span id="ret-2">2</span> sec1</a></li>
@@ -101,7 +101,7 @@ EOF
         html = <<EOF
 <h1><span id="1"></span>manual</h1>
 intro
-<h2>Contents</h2>
+<h1>Table of Contents</h1>
 <ul class="toc">
 <li><a href="#1">1 Introduction</li>
 <li><a href="#2"><span id="ret-2">2</span> sec1</a></li>

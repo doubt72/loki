@@ -1,7 +1,13 @@
 # Loki
 
 Loki is a low-key, quick and dirty utility to build static web pages using a
-simple templating format.
+simple templating format.  Loki was built with the specific needs of building
+the [Lensflare](http://www.lensflare.com/) website in mind (i.e., keeping things
+templated and organized, and also to manage game manuals and such in a
+consistent fashion) -- to see an example of it in use, take a look at the
+[source repo](https://github.com/doubt72/www.lensflare.com) for the web site.
+It was, however, built to be generally functional while I was working on the site, so
+maybe it would be useful to someone whose needs were sufficiently similar.
 
 ## Getting Started
 
@@ -39,8 +45,8 @@ If you'd like to run the tests, run:
 rspec
 ```
 
-There's also a pretty primitive Makefile that does all this for you (as well as
-`make clean` which will uninstall and remove the gem).
+There's also a pretty primitive Makefile that does all this for you (i.e., run
+`make`, or run `make clean` to uninstall and remove the gem).
 
 ## Using Loki
 
@@ -285,8 +291,18 @@ will always be referred to as `Introduction` in the table of contents and should
 be referred to the same way by `manual_ref`; the first header will be the manual
 name as supplied to `manual_data`, however.
 
-## To Do
+## Maintainer and License
 
-* manual-making stuff
+Douglas Triggs [douglas@triggs.org] is responsible for Loki.  He also likes
+inconsistently referring to himself in the third person.
+
+Loki is available under the Apache 2.0 license; don't blame me if it doesn't
+work for you, but if you ask nicely I might just help you get it running, who
+knows?  Hopefully these instructions are enough to make it pretty painless,
+though.
+
+## TODO List
+
+* blog-making stuff
 * favicon configuration
 * arbitrary head data

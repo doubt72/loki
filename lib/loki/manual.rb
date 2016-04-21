@@ -63,7 +63,7 @@ class Loki
 
       html = "<h1><span id=\"1\"></span>#{@name}</h1>\n"
       html += "#{@p_proc.__parse(@introduction, manual_section)}\n"
-      html += "<h2>Contents</h2>\n"
+      html += "<h1>Table of Contents</h1>\n"
       html += "<ul class=\"toc\">\n"
       html += "<li><a href=\"#1\">1 Introduction</li>\n"
       @sections.each do |section|
