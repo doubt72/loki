@@ -181,7 +181,65 @@ describe "Loki::PageProcessor" do
     end
   end # context "image"
 
-  context "eval" do
+  context "table" do
+    before(:each) do
+      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "x.png")
+    end
+
+    it "returns a table" do
+      html = <<EOF
+<table>
+  <tr>
+    <td>a</td>
+    <td>b</td>
+  </tr>
+  <tr>
+    <td>c</td>
+    <td>d</td>
+  </tr>
+</table>
+EOF
+      data = [["a", "b"], ["c", "d"]]
+      expect(p_proc.table(data)).to eq(html)
+    end
+
+    it "handles options" do
+      html = <<EOF
+<table id="id" class="class">
+  <tr>
+    <td>a</td>
+    <td>b</td>
+  </tr>
+  <tr>
+    <td>c</td>
+    <td>d</td>
+  </tr>
+</table>
+EOF
+      data = [["a", "b"], ["c", "d"]]
+      expect(p_proc.table(data, {id: "id", class: "class"})).to eq(html)
+    end
+
+    it "handles invalid data" do
+      data = "foo"
+      msg = /table data must be an array/m
+
+      expect {
+        p_proc.table(data)
+      }.to raise_error(StandardError, msg)
+    end
+
+    it "handles invalid row" do
+      data = [["a", "b"], "c"]
+      msg = /rows of table data must all be arrays/m
+
+      expect {
+        p_proc.table(data)
+      }.to raise_error(StandardError, msg)
+    end
+  end
+
+  context "__eval" do
     it "evaluates simple directive" do
       data = 'link_abs("url", "text")'
       html = '<a href="url">text</a>'
@@ -205,16 +263,16 @@ describe "Loki::PageProcessor" do
       data = 'link_abs('
       p_proc.parse_line = 7
       p_proc.parse_path = 'path'
-      
+
       msg = /Error on line 7 of file path.*syntax error/m
 
       expect {
         p_proc.__eval(data)
       }.to raise_error(StandardError, msg)
     end
-  end # context "eval"
+  end # context "__eval"
 
-  context "parse" do
+  context "__parse" do
     it "parses simple body" do
       body = "simple source\n"
       html = "simple source\n"
@@ -282,9 +340,9 @@ describe "Loki::PageProcessor" do
 
       expect(p_proc.__parse(body, "path")).to eq(html)
     end
-  end # context "parse"
+  end # context "__parse"
 
-  context "process" do
+  context "__process" do
     let(:page) { Loki::Page.new("a", "b", ["view"]) }
     let(:site) { Loki::Site.new }
 
@@ -396,7 +454,7 @@ EOF
       p_proc.__process
       expect(page.__html).to eq(html)
     end
-  end # context "process"
+  end # context "__process"
 
   context "__make_relative_path" do
     it "handles top same" do

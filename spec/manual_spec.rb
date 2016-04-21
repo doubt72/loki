@@ -50,7 +50,7 @@ EOF
     html
   end
 
-  context "init" do
+  context "initialize" do
     it "sets up name and intro" do
       expect(manual.name).to eq('manual')
       expect(manual.introduction).to eq('intro')
@@ -65,7 +65,7 @@ EOF
           ["other", "4.2", "other text"]
         ]])
     end
-  end # context "init"
+  end # context "initialize"
 
   context "name_to_section_index" do
     it "returns correct index" do
@@ -139,6 +139,6 @@ EOF
         }.to output("page: a/views/page ->\n" +
                     "- writing: b/page.html\n\n").to_stdout
       end
-    end # context "render directive"
-  end
-end
+    end # context "render_manual directive"
+  end # context "render"
+end # describe "Loki::Manual"

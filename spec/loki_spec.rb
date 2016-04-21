@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe "Loki" do
-  context "generate" do
+  context "self.generate" do
     it "returns error if source path doesn't exist" do
       msg = "Source path must exist.\n\n" +
         "Usage: loki <source> <destination>\n\n"
@@ -47,9 +47,9 @@ describe "Loki" do
         Loki.generate("a", "b")
       }.to raise_error(StandardError, msg)
     end
-  end # context "generate"
+  end # context "self.generate"
 
-  context "config.rb" do
+  context "config.rb check" do
     it "is handled correctly" do
       allow(Dir).to receive(:exists?).with("a").and_return(true)
       allow(Dir).to receive(:exists?).with("b").and_return(true)
@@ -125,9 +125,9 @@ EOF
         }.to raise_error(StandardError, msg)
       }.to output(output).to_stdout
     end
-  end # context "config.rb"
+  end # context "config.rb check"
 
-  context "config_load.rb" do
+  context "config_load.rb check" do
     it "is handled correctly" do
       allow(Dir).to receive(:exists?).with("a").and_return(true)
       allow(Dir).to receive(:exists?).with("b").and_return(true)
@@ -241,5 +241,5 @@ EOF
         }.to raise_error(StandardError, msg)
       }.to output(output).to_stdout
     end
-  end # context "config_load.rb"
+  end # context "config_load.rb check"
 end # describe "Loki"

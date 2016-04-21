@@ -184,26 +184,36 @@ following directives are available in the interpretation scope:
 * `image(<path>)`: inserts an image.  Image must exist in source assets
   directory and will be copied to the destination directory.
 
-* `manual_ref(<section>, <text>)`: relative link to another section of a manual.
-  This will render `<text>` with a link to the correct section of the manual; if
-  `<text>` is omitted, the section name will be used.  See the manuals section
-  below for more information.
-
-* `render_manual`: generates manual HTML from manual data as defined in the
-  metadata; see the manuals section below.
-
 `link`, `link_abs`, and `image` can be passed an options hash as the last
 argument; an `:id` key is used for ids, `:class` for classes, and `:style` for
 styles.  Passing the option `:self_class` to links will instruct them to use the
 supplied class if the link points to itself. Passing the option `:append` will
 append the value to the link, i.e., something like `#top` could be appended to
 the end of the url to link to the id `top` inside a page.  Passing the option
-`:alt` to an image will specify an alt-text for that image.  Using a double open
-curly brace (`{{`) will result in a literal curly brace (`{`) in the destination
-file. Using a double close curly brace (`}}`) inside an evaluation context will
-be a literal curly brace (`}`) instead of closing the context. You can put
-arbitrary ruby code into the evaluation blocks, e.g., `{Time.now.year}` would
-insert the year at that point in the page.
+`:alt` to an image will specify an alt-text for that image.  
+
+* `table(<data>)`: inserts a table; the data argument should be a square array
+  of arrays (i.e., lists of the same length for each row inside of an outer
+  list).  An options hash containing `:id` or `:class` can also be supplied (a
+  `:style` option would only apply to the top-level `table` tag; there are three
+  different kinds of HTML tags in a table -- `table`, `tr`, and `td` -- use CSS
+  to target them specifically.  If finer control is required, it's probably
+  better to just create the table using HTML yourself).
+
+* `manual_ref(<section>, <text>)`: relative link to another section of a manual
+  (generally this is used inside of `manual_data`, but at minimum `manual_data`
+  must be defined for the current page). This will render `<text>` with a link
+  to the correct section of the manual; if `<text>` is omitted, the section name
+  will be used.  See the manuals section below for more information.
+
+* `render_manual`: generates manual HTML from manual data as defined in the
+  metadata; see the manuals section below.
+
+Using a double open curly brace (`{{`) will result in a literal curly brace (`{`)
+in the destination file. Using a double close curly brace (`}}`) inside an
+evaluation context will be a literal curly brace (`}`) instead of closing the
+context. You can put arbitrary ruby code into the evaluation blocks, e.g.,
+`{Time.now.year}` would insert the year at that point in the page.
 
 ## Config Hooks
 

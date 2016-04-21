@@ -4,7 +4,7 @@ describe "Loki::Page" do
   let(:page) { Loki::Page.new("a", "b", ["path", "file"]) }
   let(:site) { Loki::Site.new }
 
-  context "load" do
+  context "__load" do
     it "works" do
       allow(File).to receive(:read).with("a/views/path/file").
         and_return("id \"id\"\n--\n--\nstuff\n")
@@ -16,9 +16,9 @@ describe "Loki::Page" do
       expect(page.id).to eq("id")
       expect(page.__body).to eq("--\nstuff\n")
     end
-  end # context "load"
+  end # context "__load"
 
-  context "build" do
+  context "__build" do
     it "works" do
       page.id = "id"
       page.__body = "one + one = {1 + 1}\n"
@@ -39,7 +39,7 @@ EOF
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
-  end # context "build"
+  end # context "__build"
 
   context "page access" do
     it "works" do
@@ -204,7 +204,7 @@ EOF
     end
   end # context "source and dest"
 
-  context "validate_type" do
+  context "__validate_type" do
     it "validates string" do
       page.id = "id"
 
@@ -254,5 +254,5 @@ EOF
         page.__validate_type(:id, :bar)
       }.to raise_error(StandardError, msg)
     end
-  end
+  end # context "__validate_type"
 end # describe "Loki::Page"

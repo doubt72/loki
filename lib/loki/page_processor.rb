@@ -190,6 +190,27 @@ class Loki
       rc + " />"
     end
 
+    # Simple table
+    def table(data, options = {})
+      rc = "<table"
+      rc += __handle_options(options)
+      rc += ">\n"
+      if (data.class != Array)
+        __error("table data must be an array")
+      end
+      data.each do |row|
+        if (row.class != Array)
+          __error("rows of table data must all be arrays")
+        end
+        rc += "  <tr>\n"
+        row.each do |item|
+          rc += "    <td>#{item}</td>\n"
+        end
+        rc += "  </tr>\n"
+      end
+      rc + "</table>\n"
+    end
+
     # Relative link to manual section
     def manual_ref(path, text = nil)
       if (@page.__manual_data.nil?)

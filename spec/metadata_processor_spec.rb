@@ -8,7 +8,7 @@ describe "Loki::MetadataProcessor" do
     allow(page).to receive(:__site).and_return(Loki::Site.new)
   end
 
-  context "eval" do
+  context "__eval" do
     it "handles undefined param" do
       data = "foo\n"
 
@@ -73,5 +73,5 @@ describe "Loki::MetadataProcessor" do
       expect(page.__manual_data.name_to_section_index('Introduction')).
         to eq('1')
     end
-  end # context "eval"
+  end # context "__eval"
 end # describe "Loki::MetadataProcessor"

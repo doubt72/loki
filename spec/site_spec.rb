@@ -3,7 +3,7 @@ require 'spec_helper'
 describe "Loki::Site" do
   let(:site) { Loki::Site.new }
 
-  context "add" do
+  context "__add_page" do
     it "handles duplicate ids" do
       page = Loki::Page.new("a", "b", ["view"])
       page.id = "foo"
@@ -23,9 +23,9 @@ describe "Loki::Site" do
         site.__load_pages
       }.to raise_error(StandardError, msg)
     end
-  end # context "add"
+  end # context "__add_page"
 
-  context "lookup" do
+  context "__lookup_path" do
     it "can find id" do
       page = Loki::Page.new("a", "b", ["view", "page"])
       page.id = "id"
@@ -49,5 +49,5 @@ describe "Loki::Site" do
         site.__lookup_path("a", "b", "unknown")
       }.to raise_error(StandardError, msg)
     end
-  end # context "lookup"
+  end # context "__lookup_path"
 end # describe "Loki::Site"
