@@ -5,9 +5,13 @@ simple templating format.  Loki was built with the specific needs of building
 the [Lensflare](http://www.lensflare.com/) website in mind (i.e., keeping things
 templated and organized, and also to manage game manuals and such in a
 consistent fashion) -- to see an example of it in use, take a look at the
-[source repo](https://github.com/doubt72/www.lensflare.com) for the web site.
-It was, however, built to be generally functional while I was working on the site, so
-maybe it would be useful to someone whose needs were sufficiently similar.
+[source repo](https://github.com/doubt72/www.lensflare.com) for the web site. It
+was, however, built to be generally functional while I was working on the site,
+so maybe it would be useful to someone whose needs were sufficiently similar.
+
+Think of Loki as the exact opposite of something like Sinatra: instead of a
+dynamic web server, it generates a bunch of HTML pages to be uploaded to a
+static webserver somewhere.
 
 ## Getting Started
 

@@ -61,11 +61,17 @@ class Loki
 
       manual_section = "#{@page.__source_path} manual section 1 Introduction"
 
-      html = "<h1><span id=\"1\"></span>#{@name}</h1>\n"
-      html += "#{@p_proc.__parse(@introduction, manual_section)}\n"
-      html += "<h1>Table of Contents</h1>\n"
-      html += "<ul class=\"toc\">\n"
-      html += "<li><a href=\"#1\">1 Introduction</li>\n"
+      # Generate a bunch of manual header stuff; insert the javascript
+      # we're gonna use to collapse and expand the TOC
+      html = <<EOF
+<h1><span id="1"></span>#{@name}</h1>
+#{@p_proc.__parse(@introduction, manual_section)}
+<h1 id="toc-anchor">Table of Contents</h1>
+#{Loki::Manual.script_for_toc_toggle}
+<ul class="toc">
+<li>#{Loki::Manual.standard_toggle_span(false)}<a href="#1"><span>1</span> Introduction</li>
+EOF
+
       @sections.each do |section|
         html += __render_section_toc(section)
       end
@@ -79,17 +85,74 @@ class Loki
       html
     end
 
+    # This is to standardize the script generation here and for tests; there's
+    # no point in hardcoding this in all of those heredocs especially
+    # considering that this is not dynamically generated
+    def self.standard_toggle_span(collapsed)
+      display = collapsed ?  __right_arrow : '&nbsp;'
+      html_class = collapsed ? __collapsed_class : __empty_class
+
+      html = "<span class=\"#{html_class}\" style=\"float: left; width: 1em;"
+      if (collapsed)
+        html += " cursor: pointer;"
+      end
+      html += "\" onclick=\"toggleTOC(this);\">#{display}</span>"
+    end
+
+    def self.__empty_class
+      'toc_empty'
+    end
+
+    def self.__collapsed_class
+      'toc_collapsed'
+    end
+
+    def self.__expanded_class
+      'toc_expanded'
+    end
+
+    def self.__right_arrow
+      '&#9658;'
+      '&#9656;'
+    end
+
+    def self.__down_arrow
+      '&#9650;'
+      '&#9662;'
+    end
+
+    def self.script_for_toc_toggle
+      html = <<EOF
+<script type="text/javascript">
+function toggleTOC(elem) {
+  var html_class = elem.className;
+  var children = elem.parentNode.childNodes;
+  if (html_class == '#{__collapsed_class}') {
+    elem.className = '#{__expanded_class}';
+    children[3].style.display = 'block';
+    elem.innerHTML = '#{__down_arrow}'
+  } else if (html_class == '#{__expanded_class}') {
+    elem.className = '#{__collapsed_class}';
+    children[3].style.display = 'none';
+    elem.innerHTML = '#{__right_arrow}'
+  }
+}
+</script>
+EOF
+    end
+
     def __render_section_toc(section)
-      html = "<li><a href=\"##{section[1]}\">"
-      html += "<span id=\"ret-#{section[1]}\">"
-      html += "#{section[1]}</span> #{section[0]}</a></li>\n"
+      html = "<li>#{Loki::Manual.standard_toggle_span(section.length > 3)}"
+      html += "<a href=\"##{section[1]}\">"
+      html += "<span>#{section[1]}</span> #{section[0]}</a>"
       if (section.length > 3)
-        html += "<ul>\n"
+        html += "\n<ul style=\"display: none;\">\n"
         section[3..-1].each do |subsec|
           html += __render_section_toc(subsec)
         end
         html += "</ul>\n"
       end
+      html += "</li>\n"
 
       html
     end
@@ -98,7 +161,7 @@ class Loki
       manual_section = "#{@page.__source_path} manual section " +
         "#{section[1]} #{section[0]}"
 
-      html = "<h#{depth+2}><a href=\"#ret-#{section[1]}\">"
+      html = "<h#{depth+2}><a href=\"#toc-anchor\">"
       html += "<span id=\"#{section[1]}\">#{section[1]}</span>"
       html += " #{section[0]}</a></h#{depth+2}>\n"
       html += @p_proc.__parse(section[2], manual_section) + "\n"

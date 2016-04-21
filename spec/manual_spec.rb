@@ -20,31 +20,42 @@ describe "Loki::Manual" do
   let(:p_proc) { Loki::PageProcessor.new(page) }
   let(:manual) { Loki::Manual.new(manual_data, page) }
 
+  # These are repeated (also static) and generated for TOC toggling
+  let(:toc_span) {
+    "<li>#{Loki::Manual.standard_toggle_span(false)}<a href=\"#"
+  }
+  let(:toc_sel_span) {
+    "<li>#{Loki::Manual.standard_toggle_span(true)}<a href=\"#"
+  }
+
   let(:manual_html) do
-    # This looks kind of dumb because my editor was being cranky
+    # This looks kind of dumb because my editor was being cranky; also this is
+    # kind of messing, because checking generated HTML
     html = <<EOF
 <h1><span id="1"></span>manual</h1>
 intro
-<h1>Table of Contents</h1>
+<h1 id="toc-anchor">Table of Contents</h1>
+#{Loki::Manual.script_for_toc_toggle}
 <ul class="toc">
-<li><a href="#1">1 Introduction</li>
-<li><a href="#2"><span id="ret-2">2</span> sec1</a></li>
-<li><a href="#3"><span id="ret-3">3</span> sec2</a></li>
-<li><a href="#4"><span id="ret-4">4</span> sec3</a></li>
-<ul>
-<li><a href="#4.1"><span id="ret-4.1">4.1</span> subsec</a></li>
-<li><a href="#4.2"><span id="ret-4.2">4.2</span> other</a></li>
+#{toc_span}1"><span>1</span> Introduction</li>
+#{toc_span}2"><span>2</span> sec1</a></li>
+#{toc_span}3"><span>3</span> sec2</a></li>
+#{toc_sel_span}4"><span>4</span> sec3</a>
+<ul style="display: none;">
+#{toc_span}4.1"><span>4.1</span> subsec</a></li>
+#{toc_span}4.2"><span>4.2</span> other</a></li>
 </ul>
+</li>
 </ul>
-<h2><a href="#ret-2"><span id="2">2</span> sec1</a></h2>
+<h2><a href="#toc-anchor"><span id="2">2</span> sec1</a></h2>
 1 text
-<h2><a href="#ret-3"><span id="3">3</span> sec2</a></h2>
+<h2><a href="#toc-anchor"><span id="3">3</span> sec2</a></h2>
 2 text
-<h2><a href="#ret-4"><span id="4">4</span> sec3</a></h2>
+<h2><a href="#toc-anchor"><span id="4">4</span> sec3</a></h2>
 3 text
-<h3><a href="#ret-4.1"><span id="4.1">4.1</span> subsec</a></h3>
+<h3><a href="#toc-anchor"><span id="4.1">4.1</span> subsec</a></h3>
 subsec text
-<h3><a href="#ret-4.2"><span id="4.2">4.2</span> other</a></h3>
+<h3><a href="#toc-anchor"><span id="4.2">4.2</span> other</a></h3>
 other text
 EOF
     html
@@ -101,15 +112,16 @@ EOF
         html = <<EOF
 <h1><span id="1"></span>manual</h1>
 intro
-<h1>Table of Contents</h1>
+<h1 id="toc-anchor">Table of Contents</h1>
+#{Loki::Manual.script_for_toc_toggle}
 <ul class="toc">
-<li><a href="#1">1 Introduction</li>
-<li><a href="#2"><span id="ret-2">2</span> sec1</a></li>
-<li><a href="#3"><span id="ret-3">3</span> sec2</a></li>
+#{toc_span}1"><span>1</span> Introduction</li>
+#{toc_span}2"><span>2</span> sec1</a></li>
+#{toc_span}3"><span>3</span> sec2</a></li>
 </ul>
-<h2><a href="#ret-2"><span id="2">2</span> sec1</a></h2>
+<h2><a href="#toc-anchor"><span id="2">2</span> sec1</a></h2>
 1 text
-<h2><a href="#ret-3"><span id="3">3</span> sec2</a></h2>
+<h2><a href="#toc-anchor"><span id="3">3</span> sec2</a></h2>
 <a href="#2">sec1</a>
 EOF
         expect(manual.render).to eq(html)
