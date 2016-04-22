@@ -3,6 +3,12 @@ class Loki
     def initialize(data, page)
       @name = data[0]
       @introduction = data[1]
+      if (@name.nil?)
+        raise "error parsing manual data: no name supplied"
+      end
+      if (@introduction.nil?)
+        raise "error parsing manual data: no introduction supplied"
+      end
       @page = page
 
       count = 2
@@ -16,6 +22,13 @@ class Loki
     def __make_section(index, data)
       name = data[0]
       text = data[1]
+      if (name.nil?)
+        raise "error parsing manual data: no name supplied for section #{index}"
+      end
+      if (text.nil?)
+        raise "error parsing manual data: " +
+          "no text supplied for section #{index} #{name}"
+      end
       section = [name, index, text]
       if (data.length > 2)
         count = 1
