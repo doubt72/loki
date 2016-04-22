@@ -69,7 +69,7 @@ class Loki
 <h1 id="toc-anchor">Table of Contents</h1>
 #{Loki::Manual.script_for_toc_toggle}
 <ul class="toc">
-<li>#{Loki::Manual.standard_toggle_span(false)}<a href="#1"><span>1</span> Introduction</li>
+<li>#{Loki::Manual.standard_toggle_span(false)}<a href="#1"><span>1</span> Introduction</a></li>
 EOF
 
       @sections.each do |section|

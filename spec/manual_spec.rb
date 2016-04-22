@@ -37,7 +37,7 @@ intro
 <h1 id="toc-anchor">Table of Contents</h1>
 #{Loki::Manual.script_for_toc_toggle}
 <ul class="toc">
-#{toc_span}1"><span>1</span> Introduction</li>
+#{toc_span}1"><span>1</span> Introduction</a></li>
 #{toc_span}2"><span>2</span> sec1</a></li>
 #{toc_span}3"><span>3</span> sec2</a></li>
 #{toc_sel_span}4"><span>4</span> sec3</a>
@@ -115,7 +115,7 @@ intro
 <h1 id="toc-anchor">Table of Contents</h1>
 #{Loki::Manual.script_for_toc_toggle}
 <ul class="toc">
-#{toc_span}1"><span>1</span> Introduction</li>
+#{toc_span}1"><span>1</span> Introduction</a></li>
 #{toc_span}2"><span>2</span> sec1</a></li>
 #{toc_span}3"><span>3</span> sec2</a></li>
 </ul>
