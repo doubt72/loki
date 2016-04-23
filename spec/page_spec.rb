@@ -219,6 +219,14 @@ EOF
       page.__validate_type(:tags, :string_array)
     end
 
+    it "validates favicon_array" do
+      page.favicon = [[16, "icon", "favicon.png"],
+        [32, "icon", "favicon.png"]]
+
+      # This won't raise error
+      page.__validate_type(:favicon, :favicon_array)
+    end
+
     it "handles bad string" do
       msg = "Invalid type for id: expecting string, got 'true'\n\n"
       page.id = true
@@ -243,6 +251,51 @@ EOF
 
       expect {
         page.__validate_type(:tags, :string_array)
+      }.to raise_error(StandardError, msg)
+    end
+
+    it "handles bad favicon_array" do
+      msg = "Invalid type for favicon: expecting favicon_array, got 'true'\n\n"
+      page.favicon = true
+
+      expect {
+        page.__validate_type(:favicon, :favicon_array)
+      }.to raise_error(StandardError, msg)
+    end
+
+    it "handles bad favicon_array item" do
+      msg = "Invalid type for favicon spec: expecting array, got 'true'\n\n"
+      page.favicon = [true]
+
+      expect {
+        page.__validate_type(:favicon, :favicon_array)
+      }.to raise_error(StandardError, msg)
+    end
+
+    it "handles bad favicon size" do
+      msg = "Invalid type for favicon size: expecting integer, got 'true'\n\n"
+      page.favicon = [[true, "icon", "favicon.png"]]
+
+      expect {
+        page.__validate_type(:favicon, :favicon_array)
+      }.to raise_error(StandardError, msg)
+    end
+
+    it "handles bad favicon type" do
+      msg = "Invalid type for favicon type: expecting string, got 'true'\n\n"
+      page.favicon = [[32, true, "favicon.png"]]
+
+      expect {
+        page.__validate_type(:favicon, :favicon_array)
+      }.to raise_error(StandardError, msg)
+    end
+
+    it "handles bad favicon path" do
+      msg = "Invalid type for favicon path: expecting string, got 'true'\n\n"
+      page.favicon = [[32, "icon", true]]
+
+      expect {
+        page.__validate_type(:favicon, :favicon_array)
       }.to raise_error(StandardError, msg)
     end
 

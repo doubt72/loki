@@ -5,9 +5,9 @@ class Loki
     attr_reader :__source_root, :__destination_root, :__path_components
     attr_accessor :__body, :__html
 
-    META_SYMBOLS = %i(id title template tags css javascript)
+    META_SYMBOLS = %i(id title template tags css javascript favicon)
     META_TYPES = %i(string string string string_array string_array
-                    string_array)
+                    string_array favicon_array)
 
     META_SYMBOLS.each do |attr|
       self.send(:attr_accessor, attr)
@@ -99,6 +99,24 @@ class Loki
         value.each do |item|
           if (item.class != String)
             __type_error("tag", item, :string)
+          end
+        end
+      when :favicon_array
+        if (value.class != Array)
+          __type_error(parameter, value, type)
+        end
+        value.each do |item|
+          if (item.class != Array)
+            __type_error("favicon spec", item, :array)
+          end
+          if (item[0].class != Fixnum)
+            __type_error("favicon size", item[0], :integer)
+          end
+          if (item[1].class != String)
+            __type_error("favicon type", item[1], :string)
+          end
+          if (item[2].class != String)
+            __type_error("favicon path", item[2], :string)
           end
         end
       else

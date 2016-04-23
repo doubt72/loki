@@ -18,9 +18,8 @@ class Loki
       else
         puts "- using template: #{@page.template}"
         html = __parse(Loki::Utils.load_component(@page.__source_root,
-                                                  @page.template),
-                       File.join(@page.__source_root, 'components',
-                                 @page.template))
+          @page.template), File.join(@page.__source_root, 'components',
+            @page.template))
       end
 
       html = "<body>\n#{html}</body>\n"
@@ -33,21 +32,31 @@ class Loki
       if (@page.css)
         @page.css.each do |css|
           css_path = __make_relative_path("assets/#{css}",
-                                          @page.__destination_path)
+            @page.__destination_path)
           head += "  <link rel=\"stylesheet\" href=\"#{css_path}\" " +
             "type=\"text/css\" />\n"
           Loki::Utils.copy_asset(@page.__source_root,
-                                 @page.__destination_root, css)
+            @page.__destination_root, css)
         end
       end
       if (@page.javascript)
         @page.javascript.each do |js|
           js_path = __make_relative_path("assets/#{js}",
-                                          @page.__destination_path)
+            @page.__destination_path)
           head += "  <script src=\"#{js_path}\" type=\"text/javascript\">" +
             "</script>\n"
           Loki::Utils.copy_asset(@page.__source_root,
-                                 @page.__destination_root, js)
+            @page.__destination_root, js)
+        end
+      end
+      if (@page.favicon)
+        @page.favicon.each do |icon|
+          icon_path = __make_relative_path("assets/#{icon[2]}",
+            @page.__destination_path)
+          head += "  <link rel=\"#{icon[1]}\" type=\"image/png\" "
+          head += "href=\"#{icon_path}\" sizes=\"#{icon[0]}x#{icon[0]}\" />\n"
+          Loki::Utils.copy_asset(@page.__source_root,
+            @page.__destination_root, icon[2])
         end
       end
       if (head.length > 0)

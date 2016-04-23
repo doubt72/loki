@@ -403,11 +403,17 @@ EOF
       allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "css")
       allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "js")
       allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "js/js")
+      allow(Loki::Utils).to receive(:copy_asset).
+        with("a", "b", "favicon32.png")
+      allow(Loki::Utils).to receive(:copy_asset).
+        with("a", "b","favicon152.png")
 
       page.__body = "simple source\n"
       page.title = "title"
       page.css = ["css"]
       page.javascript = ["js", "js/js"]
+      page.favicon = [[32, "icon", "favicon32.png"],
+        [152, "apple-touch-icon", "favicon152.png"]]
       html = <<EOF
 <html>
 <head>
@@ -415,6 +421,8 @@ EOF
   <link rel="stylesheet" href="assets/css" type="text/css" />
   <script src="assets/js" type="text/javascript"></script>
   <script src="assets/js/js" type="text/javascript"></script>
+  <link rel="icon" type="image/png" href="assets/favicon32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" type="image/png" href="assets/favicon152.png" sizes="152x152" />
 </head>
 <body>
 simple source

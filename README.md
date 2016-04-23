@@ -131,6 +131,10 @@ The following parameters are available:
 * `javascript`: a list of javascript files; the files/paths must exist in the
   `assets` directory and will be copied when referenced.
 
+* `favicon`: a list of lists, each containing an (integer) size, a string with
+  the type, and a string with the path, which must exist in the `assets`
+  directory, and will be copied when referenced.
+
 * `set`: custom metadata fields; requires two arguments: a key and a value. For
   example, if `set :foo, "bar"` is used in a page's metadata, `{page.foo}` in
   the body would insert `bar` into the page at that point.
@@ -308,5 +312,4 @@ though.
 ## TODO List
 
 * blog-making stuff
-* favicon configuration
 * arbitrary head data
