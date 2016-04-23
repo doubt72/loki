@@ -30,7 +30,7 @@ describe "Loki::Manual" do
 
   let(:manual_html) do
     # This looks kind of dumb because my editor was being cranky; also this is
-    # kind of messing, because checking generated HTML
+    # kind of messy, because checking generated HTML
     html = <<EOF
 <h1><span id="1"></span>manual</h1>
 intro

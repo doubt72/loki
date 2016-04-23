@@ -50,7 +50,7 @@ describe "Loki" do
   end # context "self.generate"
 
   context "config.rb check" do
-    it "is handled correctly" do
+    before(:each) do
       allow(Dir).to receive(:exists?).with("a").and_return(true)
       allow(Dir).to receive(:exists?).with("b").and_return(true)
       allow(Dir).to receive(:exists?).with("a/views").and_return(true)
@@ -61,6 +61,9 @@ describe "Loki" do
         and_return([["page"]])
 
       allow(File).to receive(:exists?).with("a/config.rb").and_return(true)
+    end
+
+    it "is handled correctly" do
       allow(File).to receive(:read).with("a/config.rb").
         and_return("set :id, 'id'\nset :foo, 'bar'")
 
@@ -98,16 +101,6 @@ EOF
     end
 
     it "handles error" do
-      allow(Dir).to receive(:exists?).with("a").and_return(true)
-      allow(Dir).to receive(:exists?).with("b").and_return(true)
-      allow(Dir).to receive(:exists?).with("a/views").and_return(true)
-      allow(Dir).to receive(:exists?).with("a/assets").and_return(true)
-      allow(Dir).to receive(:exists?).with("a/components").and_return(true)
-
-      allow(Loki::Utils).to receive(:tree).with("a/views").
-        and_return([["page"]])
-
-      allow(File).to receive(:exists?).with("a/config.rb").and_return(true)
       allow(File).to receive(:read).with("a/config.rb").
         and_return("nope")
 
@@ -128,7 +121,7 @@ EOF
   end # context "config.rb check"
 
   context "config_load.rb check" do
-    it "is handled correctly" do
+    before(:each) do
       allow(Dir).to receive(:exists?).with("a").and_return(true)
       allow(Dir).to receive(:exists?).with("b").and_return(true)
       allow(Dir).to receive(:exists?).with("a/views").and_return(true)
@@ -139,7 +132,9 @@ EOF
         and_return([["page"]])
 
       allow(File).to receive(:exists?).with("a/config.rb").and_return(false)
+    end
 
+    it "is handled correctly" do
       allow(File).to receive(:read).with("a/views/page").
         and_return("id 'id'\n--\n{site.foo}")
 
@@ -176,17 +171,6 @@ EOF
     end
 
     it "handles error" do
-      allow(Dir).to receive(:exists?).with("a").and_return(true)
-      allow(Dir).to receive(:exists?).with("b").and_return(true)
-      allow(Dir).to receive(:exists?).with("a/views").and_return(true)
-      allow(Dir).to receive(:exists?).with("a/assets").and_return(true)
-      allow(Dir).to receive(:exists?).with("a/components").and_return(true)
-
-      allow(Loki::Utils).to receive(:tree).with("a/views").
-        and_return([["page"]])
-
-      allow(File).to receive(:exists?).with("a/config.rb").and_return(false)
-
       allow(File).to receive(:read).with("a/views/page").
         and_return("id 'id'\n--\n{site.foo}")
 
@@ -212,17 +196,6 @@ EOF
     end
 
     it "does not set values prematurely" do
-      allow(Dir).to receive(:exists?).with("a").and_return(true)
-      allow(Dir).to receive(:exists?).with("b").and_return(true)
-      allow(Dir).to receive(:exists?).with("a/views").and_return(true)
-      allow(Dir).to receive(:exists?).with("a/assets").and_return(true)
-      allow(Dir).to receive(:exists?).with("a/components").and_return(true)
-
-      allow(Loki::Utils).to receive(:tree).with("a/views").
-        and_return([["page"]])
-
-      allow(File).to receive(:exists?).with("a/config.rb").and_return(false)
-
       allow(File).to receive(:read).with("a/views/page").
         and_return("id site.nope\n--\n{site.foo}")
 

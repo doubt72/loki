@@ -125,12 +125,10 @@ EOF
     end
 
     def self.__right_arrow
-      '&#9658;'
       '&#9656;'
     end
 
     def self.__down_arrow
-      '&#9650;'
       '&#9662;'
     end
 

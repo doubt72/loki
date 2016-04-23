@@ -50,6 +50,9 @@ class Loki
       @page.__init_manual_data(data)
     end
 
+    # Define functions to set all the standard metadata for a page so we don't
+    # have to redifine that in two places, we use a standard list that's
+    # controlled by the Page class
     Loki::Page::META_SYMBOLS.each do |call|
       define_method(call) do |value = nil, &block|
         result = value

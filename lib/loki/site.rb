@@ -4,6 +4,7 @@ class Loki
       @pages = []
     end
 
+    # For creating new site-wide metadata values; used by processors
     def set(key, value, &block)
       self.class.send(:attr_accessor, key)
       self.send(key.to_s + '=', value)

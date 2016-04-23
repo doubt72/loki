@@ -5,6 +5,8 @@ class Loki
     attr_reader :__source_root, :__destination_root, :__path_components
     attr_accessor :__body, :__html
 
+    # List of metadata values that can be set, along with types for validation;
+    # these are also used by the MetadataProcessor class
     META_SYMBOLS = %i(id title template tags css javascript favicon head)
     META_TYPES = %i(string string string string_array string_array
                     string_array favicon_array string)
@@ -17,6 +19,12 @@ class Loki
       @__source_root = source_root
       @__destination_root = destination_root
       @__path_components = page
+    end
+
+    # For setting new arbitrary metadata; used by the processors
+    def set(key, value, &block)
+      self.class.send(:attr_accessor, key)
+      self.send(key.to_s + '=', value)
     end
 
     # Internal functions use '__' to avoid collisions with possible user-defined
@@ -55,11 +63,6 @@ class Loki
       File.write(__destination_path, __html)
 
       puts ""
-    end
-
-    def set(key, value, &block)
-      self.class.send(:attr_accessor, key)
-      self.send(key.to_s + '=', value)
     end
 
     def __site
