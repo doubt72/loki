@@ -4,10 +4,10 @@ class Loki
       @name = data[0]
       @introduction = data[1]
       if (@name.nil?)
-        raise "error parsing manual data: no name supplied"
+        raise "Error parsing manual data: no name supplied"
       end
       if (@introduction.nil?)
-        raise "error parsing manual data: no introduction supplied"
+        raise "Error parsing manual data: no introduction supplied"
       end
       @page = page
 
@@ -23,10 +23,10 @@ class Loki
       name = data[0]
       text = data[1]
       if (name.nil?)
-        raise "error parsing manual data: no name supplied for section #{index}"
+        raise "Error parsing manual data: no name supplied for section #{index}"
       end
       if (text.nil?)
-        raise "error parsing manual data: " +
+        raise "Error parsing manual data: " +
           "no text supplied for section #{index} #{name}"
       end
       section = [name, index, text]
