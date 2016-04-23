@@ -148,6 +148,8 @@ The following parameters are available:
 * `manual_data`: data for generating online manuals; see the manuals section
   below.
 
+* `head`: takes an arbitrary string, and inserts it into the page head
+
 Values must be inside strings (they are interpreted as ruby strings; values can
 also be returned from a `do`-`end` block).  You can also put arbitrary ruby code
 in the metadata.  The `site` and `page` objects can also be used to return
@@ -312,4 +314,3 @@ though.
 ## TODO List
 
 * blog-making stuff
-* arbitrary head data

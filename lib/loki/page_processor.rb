@@ -59,10 +59,12 @@ class Loki
             @page.__destination_root, icon[2])
         end
       end
+      if (@page.head)
+        head += @page.head
+      end
       if (head.length > 0)
         html = "<head>\n#{head}</head>\n#{html}"
       end
-      # TODO: deal with headers
 
       @page.__html = "<html>\n#{html}</html>\n"
     end

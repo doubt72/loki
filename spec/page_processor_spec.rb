@@ -462,6 +462,26 @@ EOF
       p_proc.__process
       expect(page.__html).to eq(html)
     end
+
+    it "handles arbitrary head data" do
+      allow(page).to receive(:__destination_path).and_return("b/dir/view.html")
+
+      page.__body = "simple source\n"
+      page.head = "foo\n"
+      html = <<EOF
+<html>
+<head>
+foo
+</head>
+<body>
+simple source
+</body>
+</html>
+EOF
+
+      p_proc.__process
+      expect(page.__html).to eq(html)
+    end
   end # context "__process"
 
   context "__make_relative_path" do
