@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe "Loki::Page" do
-  let(:page) { Loki::Page.new("a", "b", ["path", "file"]) }
+describe "Loki::BlogEntry" do
+  let(:blog_entry) { Loki::BlogEntry.new("a", "b", ["path", "file"]) }
   let(:site) { Loki::Site.new }
 
   context "__load" do
@@ -10,18 +10,18 @@ describe "Loki::Page" do
         and_return("id \"id\"\n--\n--\nstuff\n")
 
       expect {
-        page.__load(site)
+        blog_entry.__load(site)
       }.to output("loading source: a/views/path/file\n").to_stdout
 
-      expect(page.id).to eq("id")
-      expect(page.__body).to eq("--\nstuff\n")
+      expect(blog_entry.id).to eq("id")
+      expect(blog_entry.__body).to eq("--\nstuff\n")
     end
   end # context "__load"
 
   context "__build" do
     it "works" do
-      page.id = "id"
-      page.__body = "one + one = {1 + 1}\n"
+      blog_entry.id = "id"
+      blog_entry.__body = "one + one = {1 + 1}\n"
 
       html = <<EOF
 <html>
@@ -35,7 +35,7 @@ EOF
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.__build
+        blog_entry.__build
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -44,7 +44,7 @@ EOF
   context "page access" do
     it "works" do
       allow(File).to receive(:read).with("a/views/path/file").
-        and_return("id \"id\"\n--\nstuff: {page.id}\n")
+        and_return("id \"id\"\n--\nstuff: {blog_entry.id}\n")
 
       html = <<EOF
 <html>
@@ -55,14 +55,14 @@ stuff: id
 EOF
 
       expect {
-        page.__load(site)
+        blog_entry.__load(site)
       }.to output("loading source: a/views/path/file\n").to_stdout
 
       expect(FileUtils).to receive(:mkdir_p).with("b/path")
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.__build
+        blog_entry.__build
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -70,7 +70,7 @@ EOF
     it "handles custom metadata with set" do
       allow(File).to receive(:read).with("a/views/path/file").
         and_return("id \"id\"\nset :key, \"value\"\nset \"foo\", \"bar\"" +
-                   "\n--\nstuff: {page.key}\nalso: {page.foo}\n")
+                   "\n--\nstuff: {blog_entry.key}\nalso: {blog_entry.foo}\n")
 
       html = <<EOF
 <html>
@@ -82,14 +82,14 @@ also: bar
 EOF
 
       expect {
-        page.__load(site)
+        blog_entry.__load(site)
       }.to output("loading source: a/views/path/file\n").to_stdout
 
       expect(FileUtils).to receive(:mkdir_p).with("b/path")
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.__build
+        blog_entry.__build
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -110,13 +110,13 @@ also: bar
 EOF
 
       expect {
-        page.__load(site)
+        blog_entry.__load(site)
       }.to output("loading source: a/views/path/file\n").to_stdout
 
       expect(FileUtils).to receive(:mkdir_p).with("b/path").twice
       expect(File).to receive(:write).with("b/path/file.html", html)
 
-      page2 = Loki::Page.new("a", "b", ["path", "file2"])
+      page2 = Loki::BlogEntry.new("a", "b", ["path", "file2"])
 
       allow(File).to receive(:read).with("a/views/path/file2").
         and_return("id \"id2\"\n--\nstuff: {site.key}\nalso: {site.foo}\n")
@@ -134,7 +134,7 @@ EOF
                   "- writing: b/path/file2.html\n\n").to_stdout
 
       expect {
-        page.__build
+        blog_entry.__build
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -142,8 +142,8 @@ EOF
     it "can set value inside page" do
       allow(File).to receive(:read).with("a/views/path/file").
         and_return("id \"id\"\n--\nstuff: " +
-                   "{page.set :foo, \"bar\"\n\"stuff\"}\n" +
-                   "also: {page.foo}\n")
+                   "{blog_entry.set :foo, \"bar\"\n\"stuff\"}\n" +
+                   "also: {blog_entry.foo}\n")
 
       html = <<EOF
 <html>
@@ -155,14 +155,14 @@ also: bar
 EOF
 
       expect {
-        page.__load(site)
+        blog_entry.__load(site)
       }.to output("loading source: a/views/path/file\n").to_stdout
 
       expect(FileUtils).to receive(:mkdir_p).with("b/path")
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.__build
+        blog_entry.__build
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -182,7 +182,7 @@ stuff: path/file.html
 </html>
 EOF
 
-      site.__add_page(page)
+      site.__add_page(blog_entry)
       expect {
         site.__load_pages
       }.to output("loading source: a/views/path/file\n").to_stdout
@@ -191,7 +191,7 @@ EOF
       expect(File).to receive(:write).with("b/path/file.html", html)
 
       expect {
-        page.__build
+        blog_entry.__build
       }.to output("page: a/views/path/file ->\n" +
                   "- writing: b/path/file.html\n\n").to_stdout
     end
@@ -199,19 +199,43 @@ EOF
 
   context "source and dest" do
     it "returns source file and dest paths" do
-      expect(page.__source_path).to eq("a/views/path/file")
-      expect(page.__destination_path).to eq("b/path/file.html")
+      expect(blog_entry.__source_path).to eq("a/views/path/file")
+      expect(blog_entry.__destination_path).to eq("b/path/file.html")
     end
   end # context "source and dest"
+
+  context "date" do
+    it "works" do
+      expect(true).to be(false)
+    end
+  end # context "date"
+
+  context "date_sidebar" do
+    it "works" do
+      expect(true).to be(false)
+    end
+  end # context "date"
+
+  context "tag_sidebar" do
+    it "works" do
+      expect(true).to be(false)
+    end
+  end # context "date"
+
+  context "rss_feed" do
+    it "works" do
+      expect(true).to be(false)
+    end
+  end # context "date"
 
   context "__validate_type" do
     it "handles bad type" do
       msg = "Internal error: undefined metadata type bar\n\n"
-      page.id = "id"
+      blog_entry.id = "id"
 
       expect {
-        page.__validate_type(:id, :bar)
+        blog_entry.__validate_type(:id, :bar)
       }.to raise_error(StandardError, msg)
     end
   end # context "__validate_type"
-end # describe "Loki::Page"
+end # describe "Loki::BlogEntry"

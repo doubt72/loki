@@ -237,7 +237,7 @@ EOF
         p_proc.table(data)
       }.to raise_error(StandardError, msg)
     end
-  end
+  end # context "table"
 
   context "__eval" do
     it "evaluates simple directive" do

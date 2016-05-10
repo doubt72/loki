@@ -7,6 +7,7 @@ require 'loki/page'
 require 'loki/metadata_processor'
 require 'loki/page_processor'
 require 'loki/manual'
+require 'loki/blog_entry'
 
 class Loki
   def self.generate(source_path, dest_path)

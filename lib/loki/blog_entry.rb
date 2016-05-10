@@ -1,13 +1,11 @@
 require 'loki/view'
 
 class Loki
-  class Page < View
+  class BlogEntry < View
     # List of metadata values that can be set, along with types for validation;
     # these are also used by the MetadataProcessor class
-    META_SYMBOLS = Loki::View::META_SYMBOLS +
-      %i(template css javascript favicon head)
-    META_TYPES = Loki::View::META_TYPES +
-      %i(string string_array string_array favicon_array string)
+    META_SYMBOLS = Loki::View::META_SYMBOLS + %i(date)
+    META_TYPES = Loki::View::META_TYPES + %i(string)
 
     META_SYMBOLS.each do |attr|
       self.send(:attr_accessor, attr)
@@ -21,12 +19,7 @@ class Loki
     # data and such, though in a pinch users COULD access if they understood the
     # internals sufficiently. Not worth the bother to prevent, really, this is
     # just to avoid accidents.
-    def __init_manual_data(data)
-      @manual_data = Loki::Manual.new(data, self)
-    end
 
-    def __manual_data
-      @manual_data
-    end
+    # TODO: anything here?
   end
 end
