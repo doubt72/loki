@@ -28,5 +28,18 @@ class Loki
     def __manual_data
       @manual_data
     end
+
+    def __date_sidebar
+      @site.__date_sidebar(self)
+    end
+
+    def __tag_sidebar
+      @site.__tag_sidebar(self)
+    end
+
+    # Used for generated pages, i.e., blog summary
+    def __load_site(site)
+      @site = site
+    end
   end
 end

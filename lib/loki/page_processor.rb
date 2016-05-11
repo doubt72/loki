@@ -1,3 +1,5 @@
+require 'Time'
+
 class Loki
   class PageProcessor
     def initialize(page)
@@ -239,6 +241,35 @@ class Loki
         __error("no manual data defined, cannot render")
       end
       @page.__manual_data.render
+    end
+
+    # Blog entry date
+    def date(format = nil, options = {})
+      if (@page.class == Loki::BlogEntry)
+        date = Time.parse(@page.date)
+        if (format)
+          date.strftime(format)
+        else
+          date.strftime('%Y-%m-%d %H:%M')
+        end
+      else
+        __error("date only available in blog entries")
+      end
+    end
+
+    # date sidebar widget
+    def date_sidebar
+      @page.__date_sidebar
+    end
+
+    # tags sidebar widget
+    def tag_sidebar
+      @page.__tag_sidebar
+    end
+
+    # RSS feed link
+    def rss_feed(text, options = {})
+      link_abs('rss.xml', text, options)
     end
 
     def __make_relative_path(path, here)

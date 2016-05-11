@@ -81,7 +81,7 @@ class Loki
 #{@p_proc.__parse(@introduction, manual_section)}
 <h1 id="toc-anchor">Table of Contents</h1>
 #{Loki::Manual.script_for_toc_toggle}
-<ul class="toc">
+<ul class="toc" style="list-style-type: none;">
 <li>#{Loki::Manual.standard_toggle_span(false)}<a href="#1"><span>1</span> Introduction</a></li>
 EOF
 
@@ -133,23 +133,8 @@ EOF
     end
 
     def self.script_for_toc_toggle
-      html = <<EOF
-<script type="text/javascript">
-function toggleTOC(elem) {
-  var html_class = elem.className;
-  var children = elem.parentNode.childNodes;
-  if (html_class == '#{__collapsed_class}') {
-    elem.className = '#{__expanded_class}';
-    children[3].style.display = 'block';
-    elem.innerHTML = '#{__down_arrow}'
-  } else if (html_class == '#{__expanded_class}') {
-    elem.className = '#{__collapsed_class}';
-    children[3].style.display = 'none';
-    elem.innerHTML = '#{__right_arrow}'
-  }
-}
-</script>
-EOF
+      Loki::Utils.script_for_toggle("toggleTOC", __collapsed_class,
+        __expanded_class, __down_arrow, __right_arrow)
     end
 
     def __render_section_toc(section)
@@ -157,7 +142,7 @@ EOF
       html += "<a href=\"##{section[1]}\">"
       html += "<span>#{section[1]}</span> #{section[0]}</a>"
       if (section.length > 3)
-        html += "\n<ul style=\"display: none;\">\n"
+        html += "\n<ul style=\"display: none; list-style-type: none;\">\n"
         section[3..-1].each do |subsec|
           html += __render_section_toc(subsec)
         end

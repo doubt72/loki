@@ -62,6 +62,10 @@ class Loki
         if (value.class != String)
           type_error(parameter, value, type)
         end
+      when :boolean
+        if (value.class != TrueClass && value.class != FalseClass)
+          type_error(parameter, value, type)
+        end
       when :string_array
         if (value.class != Array)
           type_error(parameter, value, type)
@@ -91,14 +95,35 @@ class Loki
         end
       else
         msg = "Internal error: undefined metadata type #{type}"
-        Loki::Utils.error(msg)
+        error(msg)
       end
     end
 
     def self.type_error(parameter, value, type)
       msg = "Invalid type for #{parameter}: " +
         "expecting #{type}, got '#{value}'"
-      Loki::Utils.error(msg)
+      error(msg)
+    end
+
+    def self.script_for_toggle(name, collapsed_class, expanded_class,
+                               down_arrow, right_arrow)
+      html = <<EOF
+<script type="text/javascript">
+function #{name}(elem) {
+  var html_class = elem.className;
+  var children = elem.parentNode.childNodes;
+  if (html_class == '#{collapsed_class}') {
+    elem.className = '#{expanded_class}';
+    children[3].style.display = 'block';
+    elem.innerHTML = '#{down_arrow}'
+  } else if (html_class == '#{expanded_class}') {
+    elem.className = '#{collapsed_class}';
+    children[3].style.display = 'none';
+    elem.innerHTML = '#{right_arrow}'
+  }
+}
+</script>
+EOF
     end
   end
 end

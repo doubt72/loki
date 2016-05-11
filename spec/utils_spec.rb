@@ -46,6 +46,11 @@ describe "Loki::Utils" do
       Loki::Utils.validate_type(:id, "id", :string)
     end
 
+    it "validates boolean" do
+      # This won't raise error
+      Loki::Utils.validate_type(:param, true, :boolean)
+    end
+
     it "validates string_array" do
       # This won't raise error
       Loki::Utils.validate_type(:tags, ["foo", "bar"], :string_array)
@@ -64,6 +69,14 @@ describe "Loki::Utils" do
 
       expect {
         Loki::Utils.validate_type(:id, true, :string)
+      }.to raise_error(StandardError, msg)
+    end
+
+    it "handles bad boolean" do
+      msg = "Invalid type for param: expecting boolean, got 'foo'\n\n"
+
+      expect {
+        Loki::Utils.validate_type(:param, "foo", :boolean)
       }.to raise_error(StandardError, msg)
     end
 

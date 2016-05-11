@@ -6,7 +6,7 @@ class Loki::PageProcessor
 end
 
 describe "Loki::PageProcessor" do
-  let(:page) { Loki::Page.new('a', 'b', ['page']) }
+  let(:page) { Loki::Page.new('source', 'dest', ['page']) }
   let(:p_proc) { Loki::PageProcessor.new(page) }
   let(:site) { Loki::Site.new }
 
@@ -21,7 +21,7 @@ describe "Loki::PageProcessor" do
   context "include" do
     it "returns parsed contents" do
       allow(Loki::Utils).to receive(:load_component).
-        with("a", "partial").and_return("simple source")
+        with("source", "partial").and_return("simple source")
 
       expect {
         expect(p_proc.include("partial")).to eq("simple source")
@@ -33,9 +33,9 @@ describe "Loki::PageProcessor" do
       include_second = "second"
 
       allow(Loki::Utils).to receive(:load_component).
-        with("a", "partial").and_return(include)
+        with("source", "partial").and_return(include)
       allow(Loki::Utils).to receive(:load_component).
-        with("a", "second").and_return(include_second)
+        with("source", "second").and_return(include_second)
 
       expect {
         expect(p_proc.include("partial")).
@@ -76,7 +76,7 @@ describe "Loki::PageProcessor" do
 
   context "link" do
     it "returns link" do
-      allow(site).to receive(:__lookup_path).with("a", "b", "id").
+      allow(site).to receive(:__lookup_path).with("source", "dest", "id").
         and_return("views/id.html")
 
       url = '<a href="views/id.html">text</a>'
@@ -84,7 +84,7 @@ describe "Loki::PageProcessor" do
     end
 
     it "with option style" do
-      allow(site).to receive(:__lookup_path).with("a", "b", "id").
+      allow(site).to receive(:__lookup_path).with("source", "dest", "id").
         and_return("views/id.html")
 
       url = '<a href="views/id.html" style="style: style;">text</a>'
@@ -92,7 +92,7 @@ describe "Loki::PageProcessor" do
     end
 
     it "with multiple options" do
-      allow(site).to receive(:__lookup_path).with("a", "b", "id").
+      allow(site).to receive(:__lookup_path).with("source", "dest", "id").
         and_return("views/id.html")
 
       url = '<a href="views/id.html" id="id" class="class">text</a>'
@@ -100,15 +100,16 @@ describe "Loki::PageProcessor" do
     end
 
     it "copies asset" do
-      allow(File).to receive(:exists?).with("a/assets/x.png").and_return(true)
-      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "x.png")
+      allow(File).to receive(:exists?).with("source/assets/x.png").
+        and_return(true)
+      allow(Loki::Utils).to receive(:copy_asset).with("source", "dest", "x.png")
 
       url = '<a href="assets/x.png">text</a>'
       expect(p_proc.link("x.png", "text")).to eq(url)
     end
 
     it "handles :append option" do
-      allow(site).to receive(:__lookup_path).with("a", "b", "id").
+      allow(site).to receive(:__lookup_path).with("source", "dest", "id").
         and_return("views/id.html")
 
       url = '<a href="views/id.html#top">text</a>'
@@ -116,7 +117,7 @@ describe "Loki::PageProcessor" do
     end
 
     it "handles :self_class option when self" do
-      allow(site).to receive(:__lookup_path).with("a", "b", "id").
+      allow(site).to receive(:__lookup_path).with("source", "dest", "id").
         and_return("views/id.html")
 
       p_proc.page.id = "id"
@@ -126,7 +127,7 @@ describe "Loki::PageProcessor" do
     end
 
     it "handles :self_class option when not self" do
-      allow(site).to receive(:__lookup_path).with("a", "b", "id").
+      allow(site).to receive(:__lookup_path).with("source", "dest", "id").
         and_return("views/id.html")
 
       p_proc.page.id = "id2"
@@ -136,7 +137,7 @@ describe "Loki::PageProcessor" do
     end
 
     it "handles combining :self_class and :class options" do
-      allow(site).to receive(:__lookup_path).with("a", "b", "id").
+      allow(site).to receive(:__lookup_path).with("source", "dest", "id").
         and_return("views/id.html")
 
       p_proc.page.id = "id"
@@ -149,7 +150,7 @@ describe "Loki::PageProcessor" do
 
   context "image" do
     before(:each) do
-      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "x.png")
+      allow(Loki::Utils).to receive(:copy_asset).with("source", "dest", "x.png")
     end
 
     it "returns img" do
@@ -183,7 +184,7 @@ describe "Loki::PageProcessor" do
 
   context "table" do
     before(:each) do
-      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "x.png")
+      allow(Loki::Utils).to receive(:copy_asset).with("source", "dest", "x.png")
     end
 
     it "returns a table" do
@@ -343,7 +344,7 @@ EOF
   end # context "__parse"
 
   context "__process" do
-    let(:page) { Loki::Page.new("a", "b", ["view"]) }
+    let(:page) { Loki::Page.new("source", "dest", ["view"]) }
     let(:site) { Loki::Site.new }
 
     before(:each) do
@@ -362,7 +363,7 @@ EOF
 
     it "handles a template" do
       allow(Loki::Utils).to receive(:load_component).
-        with("a", "template").and_return("<b>{body}</b>")
+        with("source", "template").and_return("<b>{body}</b>")
 
       page.template = "template"
       page.__body = "simple source\n"
@@ -376,7 +377,7 @@ EOF
 
     it "handles error in template" do
       allow(Loki::Utils).to receive(:load_component).
-        with("a", "template").and_return("<b>\n\n{foo}</b>")
+        with("source", "template").and_return("<b>\n\n{foo}</b>")
 
       page.template = "template"
       page.__body = "simple source\n"
@@ -400,13 +401,13 @@ EOF
     end
 
     it "handles headers" do
-      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "css")
-      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "js")
-      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "js/js")
+      allow(Loki::Utils).to receive(:copy_asset).with("source", "dest", "css")
+      allow(Loki::Utils).to receive(:copy_asset).with("source", "dest", "js")
+      allow(Loki::Utils).to receive(:copy_asset).with("source", "dest", "js/js")
       allow(Loki::Utils).to receive(:copy_asset).
-        with("a", "b", "favicon32.png")
+        with("source", "dest", "favicon32.png")
       allow(Loki::Utils).to receive(:copy_asset).
-        with("a", "b","favicon152.png")
+        with("source", "dest","favicon152.png")
 
       page.__body = "simple source\n"
       page.title = "title"
@@ -435,11 +436,12 @@ EOF
     end
 
     it "handles relative headers" do
-      allow(page).to receive(:__destination_path).and_return("b/dir/view.html")
+      allow(page).to receive(:__destination_path).
+        and_return("dest/dir/view.html")
 
-      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "css")
-      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "js")
-      allow(Loki::Utils).to receive(:copy_asset).with("a", "b", "js/js")
+      allow(Loki::Utils).to receive(:copy_asset).with("source", "dest", "css")
+      allow(Loki::Utils).to receive(:copy_asset).with("source", "dest", "js")
+      allow(Loki::Utils).to receive(:copy_asset).with("source", "dest", "js/js")
 
       page.__body = "simple source\n"
       page.title = "title"

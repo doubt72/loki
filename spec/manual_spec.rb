@@ -16,7 +16,7 @@ describe "Loki::Manual" do
       ]
     ]
   }
-  let(:page) { Loki::Page.new('a', 'b', ['page']) }
+  let(:page) { Loki::Page.new('source', 'dest', ['page']) }
   let(:p_proc) { Loki::PageProcessor.new(page) }
   let(:manual) { Loki::Manual.new(manual_data, page) }
 
@@ -36,12 +36,12 @@ describe "Loki::Manual" do
 intro
 <h1 id="toc-anchor">Table of Contents</h1>
 #{Loki::Manual.script_for_toc_toggle}
-<ul class="toc">
+<ul class="toc" style="list-style-type: none;">
 #{toc_span}1"><span>1</span> Introduction</a></li>
 #{toc_span}2"><span>2</span> sec1</a></li>
 #{toc_span}3"><span>3</span> sec2</a></li>
 #{toc_sel_span}4"><span>4</span> sec3</a>
-<ul style="display: none;">
+<ul style="display: none; list-style-type: none;">
 #{toc_span}4.1"><span>4.1</span> subsec</a></li>
 #{toc_span}4.2"><span>4.2</span> other</a></li>
 </ul>
@@ -114,7 +114,7 @@ EOF
 intro
 <h1 id="toc-anchor">Table of Contents</h1>
 #{Loki::Manual.script_for_toc_toggle}
-<ul class="toc">
+<ul class="toc" style="list-style-type: none;">
 #{toc_span}1"><span>1</span> Introduction</a></li>
 #{toc_span}2"><span>2</span> sec1</a></li>
 #{toc_span}3"><span>3</span> sec2</a></li>
@@ -143,13 +143,13 @@ EOF
 </html>
 EOF
 
-        expect(FileUtils).to receive(:mkdir_p).with("b")
-        expect(File).to receive(:write).with("b/page.html", html)
+        expect(FileUtils).to receive(:mkdir_p).with("dest")
+        expect(File).to receive(:write).with("dest/page.html", html)
 
         expect {
           page.__build
-        }.to output("page: a/views/page ->\n" +
-                    "- writing: b/page.html\n\n").to_stdout
+        }.to output("page: source/views/page ->\n" +
+                    "- writing: dest/page.html\n\n").to_stdout
       end
     end # context "render_manual directive"
   end # context "render"

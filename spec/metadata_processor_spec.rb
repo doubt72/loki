@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe "Loki::MetadataProcessor" do
-  let(:page) { Loki::Page.new("/a", "/b", ["page"]) }
+  let(:page) { Loki::Page.new("/source", "/dest", ["page"]) }
   let(:m_proc) { Loki::MetadataProcessor.new(page) }
 
   before(:each) do

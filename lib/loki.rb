@@ -2,12 +2,13 @@ require 'pp'
 
 require 'loki/utils'
 
+require 'loki/blog'
+require 'loki/blog_entry'
 require 'loki/site'
 require 'loki/page'
+require 'loki/manual'
 require 'loki/metadata_processor'
 require 'loki/page_processor'
-require 'loki/manual'
-require 'loki/blog_entry'
 
 class Loki
   def self.generate(source_path, dest_path)
@@ -33,7 +34,7 @@ class Loki
 
     puts ""
 
-    site.__build_pages
+    site.__build_pages(source_path, dest_path)
   end
 
   def self.check_paths(source_path, dest_path)

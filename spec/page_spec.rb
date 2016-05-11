@@ -1,17 +1,17 @@
 require 'spec_helper'
 
 describe "Loki::Page" do
-  let(:page) { Loki::Page.new("a", "b", ["path", "file"]) }
+  let(:page) { Loki::Page.new("source", "dest", ["path", "file"]) }
   let(:site) { Loki::Site.new }
 
   context "__load" do
     it "works" do
-      allow(File).to receive(:read).with("a/views/path/file").
+      allow(File).to receive(:read).with("source/views/path/file").
         and_return("id \"id\"\n--\n--\nstuff\n")
 
       expect {
         page.__load(site)
-      }.to output("loading source: a/views/path/file\n").to_stdout
+      }.to output("loading source: source/views/path/file\n").to_stdout
 
       expect(page.id).to eq("id")
       expect(page.__body).to eq("--\nstuff\n")
@@ -31,19 +31,19 @@ one + one = 2
 </html>
 EOF
 
-      expect(FileUtils).to receive(:mkdir_p).with("b/path")
-      expect(File).to receive(:write).with("b/path/file.html", html)
+      expect(FileUtils).to receive(:mkdir_p).with("dest/path")
+      expect(File).to receive(:write).with("dest/path/file.html", html)
 
       expect {
         page.__build
-      }.to output("page: a/views/path/file ->\n" +
-                  "- writing: b/path/file.html\n\n").to_stdout
+      }.to output("page: source/views/path/file ->\n" +
+                  "- writing: dest/path/file.html\n\n").to_stdout
     end
   end # context "__build"
 
   context "page access" do
     it "works" do
-      allow(File).to receive(:read).with("a/views/path/file").
+      allow(File).to receive(:read).with("source/views/path/file").
         and_return("id \"id\"\n--\nstuff: {page.id}\n")
 
       html = <<EOF
@@ -56,19 +56,19 @@ EOF
 
       expect {
         page.__load(site)
-      }.to output("loading source: a/views/path/file\n").to_stdout
+      }.to output("loading source: source/views/path/file\n").to_stdout
 
-      expect(FileUtils).to receive(:mkdir_p).with("b/path")
-      expect(File).to receive(:write).with("b/path/file.html", html)
+      expect(FileUtils).to receive(:mkdir_p).with("dest/path")
+      expect(File).to receive(:write).with("dest/path/file.html", html)
 
       expect {
         page.__build
-      }.to output("page: a/views/path/file ->\n" +
-                  "- writing: b/path/file.html\n\n").to_stdout
+      }.to output("page: source/views/path/file ->\n" +
+                  "- writing: dest/path/file.html\n\n").to_stdout
     end
 
     it "handles custom metadata with set" do
-      allow(File).to receive(:read).with("a/views/path/file").
+      allow(File).to receive(:read).with("source/views/path/file").
         and_return("id \"id\"\nset :key, \"value\"\nset \"foo\", \"bar\"" +
                    "\n--\nstuff: {page.key}\nalso: {page.foo}\n")
 
@@ -83,19 +83,19 @@ EOF
 
       expect {
         page.__load(site)
-      }.to output("loading source: a/views/path/file\n").to_stdout
+      }.to output("loading source: source/views/path/file\n").to_stdout
 
-      expect(FileUtils).to receive(:mkdir_p).with("b/path")
-      expect(File).to receive(:write).with("b/path/file.html", html)
+      expect(FileUtils).to receive(:mkdir_p).with("dest/path")
+      expect(File).to receive(:write).with("dest/path/file.html", html)
 
       expect {
         page.__build
-      }.to output("page: a/views/path/file ->\n" +
-                  "- writing: b/path/file.html\n\n").to_stdout
+      }.to output("page: source/views/path/file ->\n" +
+                  "- writing: dest/path/file.html\n\n").to_stdout
     end
 
     it "handles custom metadata with global" do
-      allow(File).to receive(:read).with("a/views/path/file").
+      allow(File).to receive(:read).with("source/views/path/file").
         and_return("id \"id\"\nglobal :key, \"value\"\n" +
                    "global \"foo\", \"bar\"" +
                    "\n--\nstuff: {site.key}\nalso: {site.foo}\n")
@@ -111,36 +111,36 @@ EOF
 
       expect {
         page.__load(site)
-      }.to output("loading source: a/views/path/file\n").to_stdout
+      }.to output("loading source: source/views/path/file\n").to_stdout
 
-      expect(FileUtils).to receive(:mkdir_p).with("b/path").twice
-      expect(File).to receive(:write).with("b/path/file.html", html)
+      expect(FileUtils).to receive(:mkdir_p).with("dest/path").twice
+      expect(File).to receive(:write).with("dest/path/file.html", html)
 
-      page2 = Loki::Page.new("a", "b", ["path", "file2"])
+      page2 = Loki::Page.new("source", "dest", ["path", "file2"])
 
-      allow(File).to receive(:read).with("a/views/path/file2").
+      allow(File).to receive(:read).with("source/views/path/file2").
         and_return("id \"id2\"\n--\nstuff: {site.key}\nalso: {site.foo}\n")
 
       expect {
         page2.__load(site)
-      }.to output("loading source: a/views/path/file2\n").to_stdout
+      }.to output("loading source: source/views/path/file2\n").to_stdout
 
-      expect(File).to receive(:write).with("b/path/file2.html", html)
+      expect(File).to receive(:write).with("dest/path/file2.html", html)
 
       # Swap the order as a minimal test of ordering
       expect {
         page2.__build
-      }.to output("page: a/views/path/file2 ->\n" +
-                  "- writing: b/path/file2.html\n\n").to_stdout
+      }.to output("page: source/views/path/file2 ->\n" +
+                  "- writing: dest/path/file2.html\n\n").to_stdout
 
       expect {
         page.__build
-      }.to output("page: a/views/path/file ->\n" +
-                  "- writing: b/path/file.html\n\n").to_stdout
+      }.to output("page: source/views/path/file ->\n" +
+                  "- writing: dest/path/file.html\n\n").to_stdout
     end
 
     it "can set value inside page" do
-      allow(File).to receive(:read).with("a/views/path/file").
+      allow(File).to receive(:read).with("source/views/path/file").
         and_return("id \"id\"\n--\nstuff: " +
                    "{page.set :foo, \"bar\"\n\"stuff\"}\n" +
                    "also: {page.foo}\n")
@@ -156,21 +156,21 @@ EOF
 
       expect {
         page.__load(site)
-      }.to output("loading source: a/views/path/file\n").to_stdout
+      }.to output("loading source: source/views/path/file\n").to_stdout
 
-      expect(FileUtils).to receive(:mkdir_p).with("b/path")
-      expect(File).to receive(:write).with("b/path/file.html", html)
+      expect(FileUtils).to receive(:mkdir_p).with("dest/path")
+      expect(File).to receive(:write).with("dest/path/file.html", html)
 
       expect {
         page.__build
-      }.to output("page: a/views/path/file ->\n" +
-                  "- writing: b/path/file.html\n\n").to_stdout
+      }.to output("page: source/views/path/file ->\n" +
+                  "- writing: dest/path/file.html\n\n").to_stdout
     end
   end # context "page access"
 
   context "site access" do
     it "works" do
-      allow(File).to receive(:read).with("a/views/path/file").
+      allow(File).to receive(:read).with("source/views/path/file").
         and_return("id \"id\"\n--\nstuff: " +
                    "{ site.__lookup_path('a', 'b', 'id') }\n")
 
@@ -185,22 +185,22 @@ EOF
       site.__add_page(page)
       expect {
         site.__load_pages
-      }.to output("loading source: a/views/path/file\n").to_stdout
+      }.to output("loading source: source/views/path/file\n").to_stdout
 
-      expect(FileUtils).to receive(:mkdir_p).with("b/path")
-      expect(File).to receive(:write).with("b/path/file.html", html)
+      expect(FileUtils).to receive(:mkdir_p).with("dest/path")
+      expect(File).to receive(:write).with("dest/path/file.html", html)
 
       expect {
         page.__build
-      }.to output("page: a/views/path/file ->\n" +
-                  "- writing: b/path/file.html\n\n").to_stdout
+      }.to output("page: source/views/path/file ->\n" +
+                  "- writing: dest/path/file.html\n\n").to_stdout
     end
   end # context "site access"
 
   context "source and dest" do
     it "returns source file and dest paths" do
-      expect(page.__source_path).to eq("a/views/path/file")
-      expect(page.__destination_path).to eq("b/path/file.html")
+      expect(page.__source_path).to eq("source/views/path/file")
+      expect(page.__destination_path).to eq("dest/path/file.html")
     end
   end # context "source and dest"
 
