@@ -5,13 +5,14 @@ simple templating format.  Loki was built with the specific needs of building
 the [Lensflare](http://www.lensflare.com/) website in mind (i.e., keeping things
 templated and organized, and also to manage game manuals and such in a
 consistent fashion) -- to see an example of it in use, take a look at the
-[source repo](https://github.com/doubt72/www.lensflare.com) for the web site. It
-was, however, built to be generally functional while I was working on the site,
-so maybe it would be useful to someone whose needs were sufficiently similar.
+[source repo](https://github.com/doubt72/www.lensflare.com) for the web site.  I
+did, however, make minimal efforts to keep it generally useful while I was
+working on the site, so maybe it would be useful to someone whose needs were
+sufficiently similar.
 
 Think of Loki as the exact opposite of something like Sinatra: instead of a
 dynamic web server, it generates a bunch of HTML pages to be uploaded to a
-static webserver somewhere.
+static web server somewhere.
 
 ## Getting Started
 
@@ -51,6 +52,37 @@ rspec
 
 There's also a pretty primitive Makefile that does all this for you (i.e., run
 `make`, or run `make clean` to uninstall and remove the gem).
+
+## Why Loki?
+
+Why not?  It's useful for me.
+
+I wanted something to manage a static web page that had gotten a bit unwieldy,
+especially my online manuals (which were really a bit of a mess).  The blog
+stuff I threw in because, well, why not. I didn't have particularly heavyweight
+needs there, either, and liked the idea of having complete control over
+everything.
+
+Is it useful for you?  Who knows?  Maybe if your needs are similar enough (i.e.,
+if you need to manage a static site where you write the pages locally and FTP
+them up to a static server or whatever.  If you have online manuals to manage.
+If you're a clone of me in a very similar parallel universe.  I don't judge).
+It probably isn't the easiest software to use for whatever passes for normal
+people, and it does (gasp) involve programming some pretty minimal Ruby, but
+honestly you don't really need to know anything about Ruby to use it (though it
+would help to debug issues with your pages.  Hopefully I've made the error
+messages expressive enough -- and the software stable enough -- that you
+wouldn't need that, though).  That said, it is pretty oriented towards
+programmers, so your mileage may vary.
+
+If you are a programmer, I've also made some effort to keep the code tested and
+somewhat maintainable, although I know I haven't done a perfect job there, I
+don't think it's too bad, either.  So screwing around with Loki itself hopefully
+wouldn't be too intimidating.
+
+anyway, writing it was relaxing, and I needed something to unwind after I quit
+one job before I really dived into the next one, so writing it had some value to
+me independent of any usefulness it might or might not objective have.
 
 ## Using Loki
 
@@ -324,6 +356,14 @@ be configured either in the `blog_config` block, or in the individual entries.
 `blog_config` block.  In addition to those, the following parameters can also
 found there:
 
+* `main_title`: the main title of the blog; this will be used for the main blog
+  pages, i.e., the blog entry list pages.
+
+* `main_template`: the template used for the main blog pages, as above (and also
+  for generated pages for tags, see `tag_pages` below).
+
+* `entry_template`: the template used for the blog entries.
+
 * `directory`: source directory where blog entries are found.  This is required;
   I may eventually add support for multiple blog_config blocks with distinct
   directories, but haven't bothered yet.  Note that filenames will be used for
@@ -337,30 +377,51 @@ found there:
   pages (i.e., regular non-blog-entry pages) with given tags in addition to blog
   entries.
 
-* `generate_rss`: generates an rss feed that can be linked to with `rss_feed`
+* `generate_rss`: generates an RSS feed that can be linked to with `rss_feed`
   below; defaults to `false`.
+
+* `main_date_format`: the format used for displaying dates on the blog list
+  pages.  Defaults to `"%Y-%m-%d %H:%M"`.
+
+* `description`: used for the blog description in RSS.
+
+* `site_link`: main link to your page for RSS (don't use anything else or the
+  entry links will be broken.  Also don't use a trailing slash).
+
+* `entries_per_page`: how many entries will appear on your main blog page before
+  pagination kicks in.
 
 For example, you might have something like this in `config.rb`:
 
 ```
 blog_config do
-  template "my.template"
+  main_title "my blog"
+  main_template "my.template"
+  entry_template "my.template"
   directory "blog_entries"
   css ["my.css"]
 end
 ```
 
+Note that the main blog page will have `blog` as its ID so you can link to it
+from other pages.
+
 On each individual entry, the `id` (required), `title`, `tags`, `set`, and
 `global` parameters are available (as in normal view metadata), and all should
 be found before a `--` separator (as with normal view metadata).  In addition,
-the following parameter can (and probably should) be included:
+the following parameters are available:
 
-* `date`: this should be a valid date-time string (anything Time.parse can
-  handle is valid, so most reasonable strings should be fine; it's up to the
-  blog author to supply something reasonable, however -- do note that not
-  supplying a year will cause the entry to be the current year **when the blog
-  page is generated by Loki** which may not be what you intended, so fully
-  specifying the date is recommended).
+* `date` (required): this should be a valid date-time string (anything
+  Time.parse can handle is valid, so most reasonable strings should be fine;
+  it's up to the blog author to supply something reasonable, however -- do note
+  that not supplying a year will cause the entry to be the current year **when
+  the blog page is generated by Loki** which may not be what you intended, so
+  fully specifying the date is recommended).  We can probably pretend that
+  timezones don't exist, though, since dates are being defined on the same
+  machine that's generating date links and such, but if that matters to you,
+  well, look up Time.parse and give it what it wants.
+
+* `description`: description for RSS; required if generating RSS.
 
 Inside of entries (or the blog template), all of the (non-manual) directives are
 available.  In addition, the following are also available:
@@ -390,14 +451,9 @@ though.
 
 ## TODO List
 
-Testing:
+Probably nothing else major at this point, unless I need to implement a new
+feature or something.  I might do some random refactoring to clean things up a
+bit (in hindsight, having blog entries and pages as separate things might not be
+the best idea, for one).  Also, the tests aren't really the greatest.
 
-* tag pages include non-blog pages
-* commented tests
-* main page test [main title, main template, layout]
-* add previous/next functionality and tests
-* update docs to match
-* include docs about fixed id for blog
-* add main page pagination
-* test entry `__destination_file`/blog `__lookup`
-* translate tag names to HTML friendly
+It's good enough for now, anyway.

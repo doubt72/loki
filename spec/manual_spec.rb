@@ -137,6 +137,9 @@ EOF
 
         html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 #{manual_html}
 </body>

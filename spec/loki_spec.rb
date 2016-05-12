@@ -77,6 +77,9 @@ describe "Loki" do
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 bar</body>
 </html>
@@ -147,6 +150,9 @@ EOF
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 bar</body>
 </html>

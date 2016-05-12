@@ -25,6 +25,9 @@ describe "Loki::Page" do
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 one + one = 2
 </body>
@@ -48,6 +51,9 @@ EOF
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 stuff: id
 </body>
@@ -74,6 +80,9 @@ EOF
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 stuff: value
 also: bar
@@ -102,6 +111,9 @@ EOF
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 stuff: value
 also: bar
@@ -147,6 +159,9 @@ EOF
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 stuff: stuff
 also: bar
@@ -176,6 +191,9 @@ EOF
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 stuff: path/file.html
 </body>

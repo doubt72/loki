@@ -17,12 +17,12 @@ class Loki
       super(source_root, destination_root, [])
     end
 
-    def date_sidebar
-      @blog.date_sidebar(self)
+    def __date_sidebar
+      @blog.__date_sidebar(self)
     end
 
-    def tags_sidebar
-      @blog.tags_sidebar(self)
+    def __tag_sidebar
+      @blog.__tag_sidebar(self)
     end
 
     # Unlike pages, these values are universal and are defined in the "parent"

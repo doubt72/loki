@@ -1,12 +1,14 @@
+require 'uri'
+
 class Loki
   class Blog
     # List of metadata values that can be set, along with types for validation;
     # these are also used by the MetadataProcessor class
     META_SYMBOLS = %i(main_title main_template css javascript favicon head
       directory tag_pages generate_rss entry_template main_date_format
-      description site_link)
+      description site_link entries_per_page)
     META_TYPES = %i(string string string_array string_array favicon_array string
-      string boolean boolean string string string string)
+      string boolean boolean string string string string integer)
 
     META_SYMBOLS.each do |attr|
       self.send(:attr_accessor, attr)
@@ -22,6 +24,10 @@ class Loki
     # internals sufficiently. Not worth the bother to prevent, really, this is
     # just to avoid accidents.
     def __load_entries(source_path, destination_path)
+      0.upto(META_SYMBOLS.length - 1) do |x|
+        __validate_type(META_SYMBOLS[x], META_TYPES[x])
+      end
+
       if (directory.nil?)
         Loki::Utils.error("Must supply a directory with blog entries when using blog_config")
       end
@@ -36,6 +42,9 @@ class Loki
           entry.__load(@site)
           if (entry.id)
             @site.__check_and_add_id(entry.id, :blog_entry)
+          end
+          if (!entry.date)
+            Loki::Utils.error("All blog entries must have a date")
           end
           @entries.push(entry)
         end
@@ -54,48 +63,83 @@ class Loki
       end
     end
 
+    def __validate_type(parameter, type)
+      value = send(parameter)
+      Loki::Utils.validate_type(parameter, value, type)
+    end
+
     def __sort_entries
       @entries.sort! do |a, b|
-        Time.parse(a.date) <=> Time.parse(b.date)
+        Time.parse(b.date) <=> Time.parse(a.date)
       end
     end
 
     def __create_main_pages(source_path, destination_path)
-      page = Loki::Page.new(source_path, destination_path, ['blog', 'index'])
-      page.id = "blog"
-      page.title = main_title
-      page.template = main_template
-      page.css = css
-      page.javascript = javascript
-      page.favicon = favicon
-      page.head = head
-      if (@entries.length > 0)
-        page.__body = ""
-        @entries.each do |entry|
-          if (!entry.id)
-            Loki::Utils.error("All blog entries must have an id")
-          end
-          if (!entry.title)
-            Loki::Utils.error("All blog entries must have a title")
-          end
-          if (!entry.date)
-            Loki::Utils.error("All blog entries must have a date")
-          end
-          date = Time.parse(entry.date)
-          if (main_date_format)
-            date = date.strftime(main_date_format)
-          else
-            date = date.strftime("%Y-%m-%d %H:%M")
-          end
-          page.__body += "<p>{ link(\"#{entry.id}\", \"#{entry.title}\") } " +
-            "<span class=\"blog-date\">[#{date}]</span></p>\n"
-        end
-      else
-        page.__body = "No blog entries yet."
+      epp = entries_per_page
+      if (!epp)
+        epp = 20
       end
-      page.__load_site(@site)
+      page_count = (@entries.length - 1) / epp + 1
+      1.upto(page_count) do |current_page|
+        if (current_page > 1)
+          page = Loki::Page.new(source_path, destination_path,
+            ['blog', "page#{current_page}"])
+        else
+          page = Loki::Page.new(source_path, destination_path,
+            ['blog', 'index'])
+        end
+        page.id = "blog"
+        if (current_page > 1)
+          page.id = "blog-page#{current_page}"
+        end
+        page.title = main_title
+        page.template = main_template
+        page.css = css
+        page.javascript = javascript
+        page.favicon = favicon
+        page.head = head
+        if (@entries.length > 0)
+          page.__body = ""
+          (epp * (current_page - 1)).upto(epp * current_page - 1) do |index|
+            if (index >= @entries.length)
+              break
+            end
+            entry = @entries[index]
+            if (!entry.id)
+              Loki::Utils.error("All blog entries must have an id")
+            end
+            if (!entry.title)
+              Loki::Utils.error("All blog entries must have a title")
+            end
+            date = Time.parse(entry.date)
+            if (main_date_format)
+              date = date.strftime(main_date_format)
+            else
+              date = date.strftime("%Y-%m-%d %H:%M")
+            end
+            page.__body += "<p>{ link(\"#{entry.id}\", \"#{entry.title}\") } " +
+              "<span class=\"blog-date\">[#{date}]</span></p>\n"
+          end
+          if (current_page > 1)
+            prev_page = "page#{current_page - 1}.html"
+            if (current_page == 2)
+              prev_page = "index.html"
+            end
+            page.__body += "<span class=\"prev-blog-page\">" +
+              "<a href=\"#{prev_page}\">prev page</a></span>\n"
+          end
+          if (current_page < page_count)
+            next_page = "page#{current_page + 1}.html"
+            page.__body += "<span class=\"next-blog-page\">" +
+              "<a href=\"#{next_page}\">next page</a></span>\n"
+          end
+        else
+          page.__body = "No blog entries yet."
+        end
+        page.__load_site(@site)
 
-      @site.__add_page(page)
+        @site.__add_page(page)
+      end
     end
 
     def __build_entries
@@ -126,7 +170,7 @@ class Loki
       @entries.each do |entry|
         data += "  <item>\n"
         data += "    <title>#{entry.title}</title>\n"
-        if (!main_title)
+        if (!entry.description)
           Loki::Utils.error("Must supply descriptions for entries when generating RSS")
         end
         data += "    <description>#{entry.description}</description>\n"
@@ -149,7 +193,7 @@ class Loki
       tags.each_key do |tag|
         page = Loki::Page.new(source_path, destination_path,
           ['blog', 'tags', tag])
-        page.id = "blog-#{tag}"
+        page.id = "tag-#{tag}"
         page.title = "#{tag} tag"
         page.template = main_template
         page.css = css
@@ -157,7 +201,7 @@ class Loki
         page.favicon = favicon
         page.head = head
         page.__body = "<span class=\"blog-filter\">" +
-          "Currently filtering on: <em>#{tag}</em></span>"
+          "Currently filtering on: <em>#{tag}</em></span>\n"
 
         refs = @site.__pages_with_tag(tag)
         refs.each do |ref|
@@ -168,14 +212,16 @@ class Loki
         end
 
         @entries.each do |entry|
-          date = Time.parse(entry.date)
-          if (main_date_format)
-            date = date.strftime(main_date_format)
-          else
-            date = date.strftime("%Y-%m-%d %H:%M")
+          if (entry.tags.include?(tag))
+            date = Time.parse(entry.date)
+            if (main_date_format)
+              date = date.strftime(main_date_format)
+            else
+              date = date.strftime("%Y-%m-%d %H:%M")
+            end
+            page.__body += "<p>{ link(\"#{entry.id}\", \"#{entry.title}\") } " +
+            "<span class=\"blog-date\">[#{date}]</span></p>\n"
           end
-          page.__body += "<p>{ link(\"#{entry.id}\", \"#{entry.title}\") } " +
-          "<span class=\"blog-date\">[#{date}]</span></p>\n"
         end
 
         page.__load_site(@site)
@@ -200,32 +246,25 @@ class Loki
       rc += "<div class=\"blog-date-sidebar\">\n" +
         "<ul style=\"list-style-type: none;\">\n"
       years = __make_date_buckets
-      years.keys.reverse.each do |year|
+      years.keys.each do |year|
         collapsed = false
         display = "block"
         if (year != Time.now.year)
           collapsed = true
           display = "none"
         end
-        rc += "  <li style=\"clear: both;\">" +
-          "#{Loki::Blog.__standard_toggle_span(collapsed)}<span>#{year}" +
-          "</span>\n    <ul style=\"list-style-type: none; " +
-          "display: #{display};\">\n"
+        rc += "#{__date_li(collapsed, year, display, 2)}"
         months = years[year]
-        months.keys.reverse.each do |month|
+        months.keys.each do |month|
           collapsed = false
           display = "block"
           if (year != Time.now.year || month != Time.now.month)
             collapsed = true
             display = "none"
           end
-          rc += "      <li style=\"clear: both;\">" +
-            "#{Loki::Blog.__standard_toggle_span(collapsed)}<span>" +
-            "#{__month_names[month-1]}</span>\n" +
-            "        <ul style=\"list-style-type: none; " +
-            "display: #{display};\">\n"
+          rc += "#{__date_li(collapsed, __month_names[month - 1], display, 6)}"
           entries = months[month]
-          entries.reverse.each do |entry|
+          entries.each do |entry|
             pp = Loki::PageProcessor.new(entry)
             name = File.basename(entry.__destination_path)
             path = pp.__make_relative_path(entry.__destination_file,
@@ -240,6 +279,14 @@ class Loki
       end
       rc += "</ul>\n</div>\n"
       rc
+    end
+
+    def __date_li(collapsed, value, display, indent)
+      spaces = ' ' * indent
+      "#{spaces}<li style=\"clear: both;\">" +
+        "#{Loki::Blog.__standard_toggle_span(collapsed)}<span>#{value}" +
+        "</span>\n#{spaces}  <ul style=\"list-style-type: none; " +
+        "display: #{display};\">\n"
     end
 
     def __make_date_buckets
@@ -317,11 +364,11 @@ class Loki
         count = tags[tag]
         if (tag_pages)
           pp = Loki::PageProcessor.new(page)
-          path = pp.__make_relative_path("blog/tags/#{tag}.html",
+          path = pp.__make_relative_path("blog/tags/#{URI.encode(tag)}.html",
             page.__destination_path)
           rc += "<li><a href=\"#{path}\">#{tag} (#{count})</a></li>\n"
         else
-          rc += "<li>#{tag} (#{count})</li>"
+          rc += "<li>#{tag} (#{count})</li>\n"
         end
       end
       rc += "</ul>\n</div>\n"

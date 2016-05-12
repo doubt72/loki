@@ -355,7 +355,16 @@ EOF
 
     it "handles a simple body" do
       page.__body = "simple source\n"
-      html = "<html>\n<body>\nsimple source\n</body>\n</html>\n"
+      html =<<EOF
+<html>
+<head>
+  <meta charset="UTF-8" />
+</head>
+<body>
+simple source
+</body>
+</html>
+EOF
 
       p_proc.__process
       expect(page.__html).to eq(html)
@@ -363,11 +372,20 @@ EOF
 
     it "handles a template" do
       allow(Loki::Utils).to receive(:load_component).
-        with("source", "template").and_return("<b>{body}</b>")
+        with("source", "template").and_return("<b>{body}</b>\n")
 
       page.template = "template"
-      page.__body = "simple source\n"
-      html = "<html>\n<body>\n<b>simple source\n</b></body>\n</html>\n"
+      page.__body = "simple source"
+      html =<<EOF
+<html>
+<head>
+  <meta charset="UTF-8" />
+</head>
+<body>
+<b>simple source</b>
+</body>
+</html>
+EOF
 
       expect {
         p_proc.__process
@@ -418,6 +436,7 @@ EOF
       html = <<EOF
 <html>
 <head>
+  <meta charset="UTF-8" />
   <title>title</title>
   <link rel="stylesheet" href="assets/css" type="text/css" />
   <script src="assets/js" type="text/javascript"></script>
@@ -450,6 +469,7 @@ EOF
       html = <<EOF
 <html>
 <head>
+  <meta charset="UTF-8" />
   <title>title</title>
   <link rel="stylesheet" href="../assets/css" type="text/css" />
   <script src="../assets/js" type="text/javascript"></script>
@@ -473,6 +493,7 @@ EOF
       html = <<EOF
 <html>
 <head>
+  <meta charset="UTF-8" />
 foo
 </head>
 <body>

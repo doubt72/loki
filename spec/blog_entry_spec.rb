@@ -1,5 +1,9 @@
 require 'spec_helper'
 
+class Loki::Blog
+  attr_accessor :entries
+end
+
 describe "Loki::BlogEntry" do
   let(:site) { Loki::Site.new }
   let(:blog) { Loki::Blog.new(site) }
@@ -30,6 +34,9 @@ describe "Loki::BlogEntry" do
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 one + one = 2
 </body>
@@ -53,6 +60,9 @@ EOF
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 stuff: id
 </body>
@@ -79,6 +89,9 @@ EOF
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 stuff: value
 also: bar
@@ -107,6 +120,9 @@ EOF
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 stuff: value
 also: bar
@@ -152,6 +168,9 @@ EOF
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 stuff: stuff
 also: bar
@@ -181,6 +200,9 @@ EOF
 
       html = <<EOF
 <html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 <body>
 stuff: bar
 </body>
@@ -225,19 +247,78 @@ EOF
 
   context "date_sidebar" do
     it "works" do
-      #expect(true).to be(false)
+      blog_entry.date = '2015-01-01 12:00'
+      blog.entries = [blog_entry]
+
+      li = "<li style=\"clear: both;\"><span class=\"blog_date_collapsed\" " +
+        "style=\"float: left; width: 1em; cursor: pointer;\" " +
+        "onclick=\"toggleDate(this);\">&#9656;</span>"
+      li2 = ""
+      html =<<EOF
+<div class="blog-date-sidebar">
+<ul style="list-style-type: none;">
+  #{li}<span>2015</span>
+    <ul style="list-style-type: none; display: none;">
+      #{li}<span>January</span>
+        <ul style="list-style-type: none; display: none;">
+          <li style="clear: both;"><a href="file.html"></a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+</div>
+EOF
+      html = Loki::Blog.__script_for_date_toggle + html
+
+      processor = Loki::PageProcessor.new(blog_entry)
+      expect(processor.date_sidebar).to eq(html)
     end
   end # context "date"
 
   context "tag_sidebar" do
     it "works" do
-      #expect(true).to be(false)
+      blog_entry.tags = ['foo', 'bar']
+
+      blog_entry2 = Loki::BlogEntry.new(blog, "source/blog", "dest", "file2")
+      blog_entry2.tags = ['foo']
+
+      blog.entries = [blog_entry, blog_entry2]
+      html =<<EOF
+<div class="blog-tag-sidebar">
+<ul>
+<li>bar (1)</li>
+<li>foo (2)</li>
+</ul>
+</div>
+EOF
+
+      processor = Loki::PageProcessor.new(blog_entry)
+      expect(processor.tag_sidebar).to eq(html)
+    end
+
+    it "handles links and special characters" do
+      blog.tag_pages = true
+      blog_entry.tags = ['ふ〜', 'バル']
+      blog.entries = [blog_entry]
+      html =<<EOF
+<div class="blog-tag-sidebar">
+<ul>
+<li><a href="tags/%E3%81%B5%E3%80%9C.html">ふ〜 (1)</a></li>
+<li><a href="tags/%E3%83%90%E3%83%AB.html">バル (1)</a></li>
+</ul>
+</div>
+EOF
+
+      processor = Loki::PageProcessor.new(blog_entry)
+      expect(processor.tag_sidebar).to eq(html)
     end
   end # context "date"
 
   context "rss_feed" do
     it "works" do
-      #expect(true).to be(false)
+      processor = Loki::PageProcessor.new(blog_entry)
+      expect(processor.rss_feed('feed')).to eq('<a href="rss.xml">feed</a>')
     end
   end # context "date"
 

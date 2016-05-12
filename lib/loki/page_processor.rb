@@ -27,9 +27,9 @@ class Loki
       html = "<body>\n#{html}</body>\n"
 
       # Handle all the header stuff; title, css, js, etc.
-      head = ""
+      head = "  <meta charset=\"UTF-8\" />\n"
       if (@page.title)
-        head = "  <title>#{@page.title}</title>\n"
+        head += "  <title>#{@page.title}</title>\n"
       end
       if (@page.css)
         @page.css.each do |css|
@@ -64,9 +64,7 @@ class Loki
       if (@page.head)
         head += @page.head
       end
-      if (head.length > 0)
-        html = "<head>\n#{head}</head>\n#{html}"
-      end
+      html = "<head>\n#{head}</head>\n#{html}"
 
       @page.__html = "<html>\n#{html}</html>\n"
     end
@@ -269,7 +267,8 @@ class Loki
 
     # RSS feed link
     def rss_feed(text, options = {})
-      link_abs('rss.xml', text, options)
+      link_abs(__make_relative_path(File.join('blog', 'rss.xml'),
+        @page.__destination_path), text, options)
     end
 
     def __make_relative_path(path, here)

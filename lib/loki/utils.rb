@@ -62,6 +62,10 @@ class Loki
         if (value.class != String)
           type_error(parameter, value, type)
         end
+      when :integer
+        if (value.class != Fixnum)
+          type_error(parameter, value, type)
+        end
       when :boolean
         if (value.class != TrueClass && value.class != FalseClass)
           type_error(parameter, value, type)
