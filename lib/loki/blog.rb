@@ -170,7 +170,12 @@ class Loki
       end
       data += "  <link>#{site_link}</link>\n"
       data += "  <lastBuildDate>#{Time.now.to_s}</lastBuildDate>\n"
+      count = 0
       @entries.each do |entry|
+        count += 1
+        if (count > 20)
+          break
+        end
         data += "  <item>\n"
         data += "    <title>#{entry.title}</title>\n"
         if (!entry.description)
@@ -178,6 +183,7 @@ class Loki
         end
         data += "    <description>#{entry.description}</description>\n"
         data += "    <link>#{site_link + '/' + entry.__destination_file}</link>\n"
+        data += "    <pubDate>#{Time.parse(entry.date).to_s}</pubDate>\n"
         data += "  </item>\n"
       end
       data += "</channel>\n"
@@ -379,7 +385,7 @@ class Loki
     end
 
     def __oldest(page, text)
-      if (@entries.length > 1)
+      if (@entries.length > 1 && page != @entries.last)
         pp = Loki::PageProcessor.new(page)
         pp.link(@entries.last.id, text)
       else
@@ -412,7 +418,7 @@ class Loki
     end
 
     def __newest(page, text)
-      if (@entries.length > 1)
+      if (@entries.length > 1 && page != @entries.first)
         pp = Loki::PageProcessor.new(page)
         pp.link(@entries.first.id, text)
       else

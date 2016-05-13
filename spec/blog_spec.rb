@@ -188,6 +188,7 @@ EOF
         \s\s\s\s<title>title<\/title>\n
         \s\s\s\s<description>description<\/description>\n
         \s\s\s\s<link>http:\/\/www.example.com\/blog\/entry.html<\/link>\n
+        \s\s\s\s<pubDate>\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d\s.\d\d\d\d<\/pubDate>\n
         \s\s<\/item>\n
         <\/channel>\n
         <\/rss>\n$
