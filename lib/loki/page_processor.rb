@@ -265,6 +265,28 @@ class Loki
       @page.__tag_sidebar
     end
 
+    # list of tags (for blog)
+    def tag_list
+      @page.__tag_list
+    end
+
+    # blog navigation links
+    def oldest_link(text)
+      @page.__oldest(text)
+    end
+
+    def previous_link(text)
+      @page.__previous(text)
+    end
+
+    def next_link(text)
+      @page.__next(text)
+    end
+
+    def newest_link(text)
+      @page.__newest(text)
+    end
+
     # RSS feed link
     def rss_feed(text, options = {})
       link_abs(__make_relative_path(File.join('blog', 'rss.xml'),

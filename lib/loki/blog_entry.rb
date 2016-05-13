@@ -25,6 +25,39 @@ class Loki
       @blog.__tag_sidebar(self)
     end
 
+    def __tag_list
+      t_list = []
+      if (tags)
+        tags.sort.each do |tag|
+          if (@blog.tag_pages)
+            pp = Loki::PageProcessor.new(self)
+            path = pp.__make_relative_path("blog/tags/#{URI.encode(tag)}.html",
+              __destination_path)
+            t_list.push("<a href=\"#{path}\">#{tag}</a>")
+          else
+            t_list.push("#{tag}")
+          end
+        end
+      end
+      t_list.join(', ')
+    end
+
+    def __newest(text)
+      @blog.__newest(self, text)
+    end
+
+    def __previous(text)
+      @blog.__previous(self, text)
+    end
+
+    def __next(text)
+      @blog.__next(self, text)
+    end
+
+    def __oldest(text)
+      @blog.__oldest(self, text)
+    end
+
     # Unlike pages, these values are universal and are defined in the "parent"
     # blog object
     def template

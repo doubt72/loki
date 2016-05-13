@@ -254,18 +254,26 @@ EOF
 
       expect(site.pages.length).to eq(2)
 
-      list = "<p>{ link(\"entry2\", \"title2\") } <span class=\"blog-date\">" +
-        "[2016-01-12 00:00]</span></p>\n<p>{ link(\"entry1\", \"title1\") } " +
-        "<span class=\"blog-date\">[2016-01-11 00:00]</span></p>\n<span " +
-        "class=\"next-blog-page\"><a href=\"page2.html\">next page</a></span>\n"
+      list = <<EOF
+<div class="blog-entry-list">
+<p>{ link("entry2", "title2") } <span class="blog-date">[2016-01-12 00:00]</span></p>
+<p>{ link("entry1", "title1") } <span class="blog-date">[2016-01-11 00:00]</span></p>
+</div>
+<div>&nbsp;</div>
+<span class="next-blog-page"><a href="page2.html">next page [2]</a></span>
+EOF
 
       first = site.pages.first
       expect(first.id).to eq("blog")
       expect(first.__body).to eq(list)
 
-      list2 = "<p>{ link(\"entry0\", \"title0\") } <span class=\"blog-date\">" +
-        "[2016-01-10 00:00]</span></p>\n<span " +
-        "class=\"prev-blog-page\"><a href=\"index.html\">prev page</a></span>\n"
+      list2 = <<EOF
+<div class="blog-entry-list">
+<p>{ link("entry0", "title0") } <span class="blog-date">[2016-01-10 00:00]</span></p>
+</div>
+<div>&nbsp;</div>
+<span class="prev-blog-page"><a href="index.html">prev page [1]</a></span>
+EOF
 
       last = site.pages.last
       expect(last.id).to eq("blog-page2")

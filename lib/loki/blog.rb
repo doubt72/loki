@@ -99,7 +99,7 @@ class Loki
         page.favicon = favicon
         page.head = head
         if (@entries.length > 0)
-          page.__body = ""
+          page.__body = "<div class=\"blog-entry-list\">\n"
           (epp * (current_page - 1)).upto(epp * current_page - 1) do |index|
             if (index >= @entries.length)
               break
@@ -120,18 +120,21 @@ class Loki
             page.__body += "<p>{ link(\"#{entry.id}\", \"#{entry.title}\") } " +
               "<span class=\"blog-date\">[#{date}]</span></p>\n"
           end
+          page.__body += "</div>\n<div>&nbsp;</div>\n"
           if (current_page > 1)
             prev_page = "page#{current_page - 1}.html"
             if (current_page == 2)
               prev_page = "index.html"
             end
             page.__body += "<span class=\"prev-blog-page\">" +
-              "<a href=\"#{prev_page}\">prev page</a></span>\n"
+              "<a href=\"#{prev_page}\">prev page [#{current_page - 1}]" +
+              "</a></span>\n"
           end
           if (current_page < page_count)
             next_page = "page#{current_page + 1}.html"
             page.__body += "<span class=\"next-blog-page\">" +
-              "<a href=\"#{next_page}\">next page</a></span>\n"
+              "<a href=\"#{next_page}\">next page [#{current_page + 1}]</a>" +
+              "</span>\n"
           end
         else
           page.__body = "No blog entries yet."
@@ -373,6 +376,48 @@ class Loki
       end
       rc += "</ul>\n</div>\n"
       rc
+    end
+
+    def __oldest(page, text)
+      if (@entries.length > 1)
+        pp = Loki::PageProcessor.new(page)
+        pp.link(@entries.last.id, text)
+      else
+        text
+      end
+    end
+
+    def __previous(page, text)
+      if (@entries.length > 1)
+        0.upto(@entries.length - 2) do |index|
+          if (@entries[index] == page)
+            pp = Loki::PageProcessor.new(page)
+            return pp.link(@entries[index + 1].id, text)
+          end
+        end
+      end
+      text
+    end
+
+    def __next(page, text)
+      if (@entries.length > 1)
+        1.upto(@entries.length - 1) do |index|
+          if (@entries[index] == page)
+            pp = Loki::PageProcessor.new(page)
+            return pp.link(@entries[index - 1].id, text)
+          end
+        end
+      end
+      text
+    end
+
+    def __newest(page, text)
+      if (@entries.length > 1)
+        pp = Loki::PageProcessor.new(page)
+        pp.link(@entries.first.id, text)
+      else
+        text
+      end
     end
   end
 end
