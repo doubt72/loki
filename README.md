@@ -436,8 +436,13 @@ available.  In addition, the following are also available:
 * `tag_sidebar`: generates lists of tags and counts of pages for each tags;
   includes links if `tag_pages` is true.
 
+* `tag_list`: list of tags for current entry; links if `tag_links` is true.
+
 * `rss_feed(<text>)`: inserts link to RSS feed for blog.  Options are handled
   the same as with other links.
+
+* `next_link`, `previous_link`, `oldest_link`, `newest_link`: links for
+  navigating between blog entries.
 
 ## Maintainer and License
 
