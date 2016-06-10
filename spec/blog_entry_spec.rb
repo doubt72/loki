@@ -250,16 +250,60 @@ EOF
       blog_entry.date = '2015-01-01 12:00'
       blog.entries = [blog_entry]
 
-      li = "<li style=\"clear: both;\"><span class=\"blog_date_collapsed\" " +
+      li = "<li style=\"clear: both;\"><span class=\"blog_date_expanded\" " +
         "style=\"float: left; width: 1em; cursor: pointer;\" " +
-        "onclick=\"toggleDate(this);\">&#9656;</span>"
+        "onclick=\"toggleDate(this);\">&#9662;</span>"
       li2 = ""
       html =<<EOF
 <div class="blog-date-sidebar">
 <ul style="list-style-type: none;">
   #{li}<span>2015</span>
-    <ul style="list-style-type: none; display: none;">
+    <ul style="list-style-type: none; display: block;">
       #{li}<span>January</span>
+        <ul style="list-style-type: none; display: block;">
+          <li style="clear: both;"><a href="file.html"></a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+</div>
+EOF
+      html = Loki::Blog.__script_for_date_toggle + html
+
+      processor = Loki::PageProcessor.new(blog_entry)
+      expect(processor.date_sidebar).to eq(html)
+    end
+
+    it "collapses old " do
+      blog_entry.date = '2016-01-01 12:00'
+      blog_entry2 = Loki::BlogEntry.new(blog, "source/blog", "dest", "file")
+      blog_entry2.date = '2015-01-01 12:00'
+      blog.entries = [blog_entry2, blog_entry]
+
+      c_li = "<li style=\"clear: both;\"><span class=\"blog_date_collapsed\" " +
+        "style=\"float: left; width: 1em; cursor: pointer;\" " +
+        "onclick=\"toggleDate(this);\">&#9656;</span>"
+      e_li = "<li style=\"clear: both;\"><span class=\"blog_date_expanded\" " +
+        "style=\"float: left; width: 1em; cursor: pointer;\" " +
+        "onclick=\"toggleDate(this);\">&#9662;</span>"
+
+      li2 = ""
+      html =<<EOF
+<div class="blog-date-sidebar">
+<ul style="list-style-type: none;">
+  #{e_li}<span>2016</span>
+    <ul style="list-style-type: none; display: block;">
+      #{e_li}<span>January</span>
+        <ul style="list-style-type: none; display: block;">
+          <li style="clear: both;"><a href="file.html"></a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  #{c_li}<span>2015</span>
+    <ul style="list-style-type: none; display: none;">
+      #{c_li}<span>January</span>
         <ul style="list-style-type: none; display: none;">
           <li style="clear: both;"><a href="file.html"></a></li>
         </ul>

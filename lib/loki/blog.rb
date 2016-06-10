@@ -255,19 +255,20 @@ class Loki
       rc += "<div class=\"blog-date-sidebar\">\n" +
         "<ul style=\"list-style-type: none;\">\n"
       years = __make_date_buckets
-      years.keys.each do |year|
+      years.keys.sort.reverse.each do |year|
         collapsed = false
         display = "block"
-        if (year != Time.now.year)
+        if (year != Time.parse(page.date).year)
           collapsed = true
           display = "none"
         end
         rc += "#{__date_li(collapsed, year, display, 2)}"
         months = years[year]
-        months.keys.each do |month|
+        months.keys.sort.reverse.each do |month|
           collapsed = false
           display = "block"
-          if (year != Time.now.year || month != Time.now.month)
+          if (year != Time.parse(page.date).year ||
+              month != Time.parse(page.date).month)
             collapsed = true
             display = "none"
           end
