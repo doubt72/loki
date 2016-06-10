@@ -95,6 +95,7 @@ class Loki
         page.title = main_title
         page.template = main_template
         page.css = css
+        page.date = Time.now.to_s
         page.javascript = javascript
         page.favicon = favicon
         page.head = head
@@ -206,6 +207,7 @@ class Loki
         page.title = "#{tag} tag"
         page.template = main_template
         page.css = css
+        page.date = Time.now.to_s
         page.javascript = javascript
         page.favicon = favicon
         page.head = head

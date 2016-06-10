@@ -4,8 +4,8 @@ class Loki
   class BlogEntry < View
     # List of metadata values that can be set, along with types for validation;
     # these are also used by the MetadataProcessor class
-    META_SYMBOLS = Loki::View::META_SYMBOLS + %i(date description)
-    META_TYPES = Loki::View::META_TYPES + %i(string string)
+    META_SYMBOLS = Loki::View::META_SYMBOLS + %i(description)
+    META_TYPES = Loki::View::META_TYPES + %i(string)
 
     META_SYMBOLS.each do |attr|
       self.send(:attr_accessor, attr)

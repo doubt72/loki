@@ -9,8 +9,8 @@ class Loki
     # validation; these are also used by the MetadataProcessor class.  These are
     # combined with the values in the child classes, where attr_accessor will be
     # set up.
-    META_SYMBOLS = %i(id title tags)
-    META_TYPES = %i(string string string_array)
+    META_SYMBOLS = %i(id title tags date)
+    META_TYPES = %i(string string string_array string)
 
     def initialize(source_root, destination_root, path_components)
       @__source_root = source_root
