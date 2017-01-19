@@ -80,9 +80,9 @@ somewhat maintainable, although I know I haven't done a perfect job there, I
 don't think it's too bad, either.  So screwing around with Loki itself hopefully
 wouldn't be too intimidating.
 
-anyway, writing it was relaxing, and I needed something to unwind after I quit
+Anyway, writing it was relaxing, and I needed something to unwind after I quit
 one job before I really dived into the next one, so writing it had some value to
-me independent of any usefulness it might or might not objective have.
+me independent of any usefulness it might or might not objectively have.
 
 ## Using Loki
 
